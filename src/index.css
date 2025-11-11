@@ -1,2 +1,58 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+
+@font-face {
+  font-family: "DigitalNumbers";
+  src: url("./assets/fonts/DigitalNumbers-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "PretendardVariable";
+  src: url("./assets/fonts/PretendardVariable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --color-primary-blue: #4c79ff;
+}
+
+:root {
+  --font-digit: "DigitalNumbers";
+  --font-pretendard: "PretendardVariable";
+  /* 색상 */
+  /* --color-primary-blue: #4c79ff; */
+  --color-primary-skyblue: #78b0ff;
+
+  --font-secondary: #023e99;
+}
+
+@layer utilities {
+  .digit-time {
+    font-family: var(--font-digit);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    font-size: 154px;
+    line-height: 200px;
+    letter-spacing: 0;
+  }
+
+  .pretendard {
+    font-family: var(--font-pretendard);
+  }
+
+  /* .text-primary-blue {
+    color: var(--color-primary-blue);
+  }
+
+  .border-primary-blue {
+    border-color: var(--color-primary-blue);
+  }
+
+  .bg-primary-blue {
+    background-color: var(--color-primary-blue);
+  } */
+}
