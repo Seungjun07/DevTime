@@ -11,11 +11,12 @@ export default function RootRoute() {
     <Routes>
       <Route element={<GlobalLayout />}>
         <Route path="/" element={<IndexPage />} />
-        <Route path="/sign-up" element={<SignInPage />} />
-        <Route path="/sign-in" element={<SignUpPage />} />
+        <Route path="/sign-up" element={<SignUpPage />} />
         <Route path="/my-page" element={<MyPage />} />
         <Route path="/profile" element={<ProfileDetailPage />} />
       </Route>
+
+      <Route path="/sign-in" element={<SignInPage />} />
     </Routes>
   );
 }

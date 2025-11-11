@@ -1,6 +1,8 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import logo from "./../assets/logo.svg";
 export default function GlobalLayout() {
+  const navigate = useNavigate();
+
   return (
     <div className="flex min-h-screen flex-col">
       <header className="m-auto flex h-10 w-full max-w-300 justify-between pt-4 font-semibold text-[var(--font-secondary)]">
@@ -9,14 +11,14 @@ export default function GlobalLayout() {
             <img src={logo} alt="devTime의 로고" />
           </Link>
           <div className="flex gap-9">
-            <div>대시보드</div>
-            <div>랭킹</div>
+            <button>대시보드</button>
+            <button>랭킹</button>
           </div>
         </div>
 
         <div className="flex gap-9">
-          <div>로그인</div>
-          <div>회원가입</div>
+          <button onClick={() => navigate("/sign-in")}>로그인</button>
+          <button onClick={() => navigate("/sign-up")}>회원가입</button>
         </div>
       </header>
 
