@@ -20,6 +20,7 @@
   --color-primary-blue: #4c79ff;
   --color-disabled-300: #ccd0d6;
   --color-disabled-400: #969da8;
+  --color-disabled-200: #e5e7eb;
 }
 
 :root {
@@ -44,6 +45,10 @@
 
   .pretendard {
     font-family: var(--font-pretendard);
+  }
+
+  .placeholder-custom::placeholder {
+    @apply text-disabled-300 text-[16px] leading-5 font-medium;
   }
 
   /* .text-primary-blue {
