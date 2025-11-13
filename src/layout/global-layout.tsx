@@ -12,7 +12,7 @@ export default function GlobalLayout() {
           </Link>
           <div className="flex gap-9">
             <button>대시보드</button>
-            <button>랭킹</button>
+            <button onClick={() => navigate("/ranking")}>랭킹</button>
           </div>
         </div>
 
@@ -22,7 +22,7 @@ export default function GlobalLayout() {
         </div>
       </header>
 
-      <main className="m-auto mt-24 w-full max-w-[1032px] flex-1">
+      <main className="m-auto mt-24 w-full max-w-[1200px] flex-1">
         <Outlet />
       </main>
     </div>
