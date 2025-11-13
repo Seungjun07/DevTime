@@ -5,6 +5,7 @@ import SignUpPage from "./pages/sign-up-page";
 import MyPage from "./pages/my-page";
 import ProfileDetailPage from "./pages/profile-detail-page";
 import GlobalLayout from "./layout/global-layout";
+import UserInfoLayout from "./layout/user-info-layout";
 
 export default function RootRoute() {
   return (
@@ -12,10 +13,13 @@ export default function RootRoute() {
       <Route element={<GlobalLayout />}>
         <Route path="/" element={<IndexPage />} />
         <Route path="/my-page" element={<MyPage />} />
-        <Route path="/profile" element={<ProfileDetailPage />} />
       </Route>
 
-      <Route path="/sign-up" element={<SignUpPage />} />
+      <Route element={<UserInfoLayout />}>
+        <Route path="/profile" element={<ProfileDetailPage />} />
+        <Route path="/sign-up" element={<SignUpPage />} />
+      </Route>
+
       <Route path="/sign-in" element={<SignInPage />} />
     </Routes>
   );

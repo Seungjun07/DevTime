@@ -21,6 +21,7 @@
   --color-disabled-300: #ccd0d6;
   --color-disabled-400: #969da8;
   --color-disabled-200: #e5e7eb;
+  --color-secondary-negative: #dc2626;
 }
 
 :root {
@@ -51,6 +52,14 @@
     @apply text-disabled-300 text-[16px] leading-5 font-medium;
   }
 
+  .scrollbar-hide {
+    scrollbar-width: none;
+  }
+
+  .disabled-button {
+    background-color: var(--color-disabled-200);
+    color: var(--color-disabled-400);
+  }
   /* .text-primary-blue {
     color: var(--color-primary-blue);
   }

@@ -1,9 +1,72 @@
 import { useNavigate } from "react-router-dom";
 import logo from "./../assets/logo-vertical.svg";
 import symbolLogo from "./../assets/Symbol-Logo.png";
+import { useState } from "react";
+import { ERROR } from "../lib/error";
+
+type LoginError = {
+  email?: string;
+  password?: string;
+};
 
 export default function SignInPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [errors, setErrors] = useState<LoginError>({});
+
+  function validate() {
+    const newErrors: LoginError = {};
+
+    if (email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = ERROR.email;
+    }
+
+    if (!password || !/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/.test(password)) {
+      newErrors.password = ERROR.password;
+    }
+
+    return newErrors;
+  }
+
   const navigate = useNavigate();
+  const [isLogin, setIsLogin] = useState(false);
+
+  async function handleSignIn() {
+    // const newErrors = validate();
+
+    // if (Object.keys(newErrors).length > 0) {
+    //   setErrors(newErrors);
+    //   return;
+    // }
+
+    const response = await fetch("https://devtime.prokit.app/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: email,
+        password: password,
+      }),
+    });
+
+    if (!response.ok) throw new Error("로그인 실패");
+    const data = await response.json();
+    console.log(data);
+
+    localStorage.setItem(
+      "token",
+      JSON.stringify({
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+      }),
+    );
+
+    if (data.isFirstLogin) {
+      navigate("/profile", { replace: true });
+    } else {
+      navigate("/", { replace: true });
+    }
+  }
   return (
     <div
       className="flex min-h-screen bg-cover bg-no-repeat"
@@ -17,39 +80,56 @@ export default function SignInPage() {
         <img className="mb-12 h-25 w-33" src={logo} alt="DevTime의 로고" />
 
         <div className="flex flex-col gap-9">
-          <div className="flex h-12 w-82 flex-col gap-2">
+          <div className="flex h-[94px] w-82 flex-col gap-2">
             <label
-              className="h-[18px] w-full text-[14px] leading-[18px] font-medium"
+              className="w-full text-[14px] leading-[18px] font-medium"
               htmlFor="email"
             >
               이메일
             </label>
             <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="rounded-1 text-4 text-disabled-300 bg-gray-50 px-4 py-3 leading-5 font-medium"
               id="email"
               placeholder="이메일 주소를 입력해주세요."
               type="email"
             />
+            {errors.email && (
+              <p className="text-secondary-negative pt-2 text-[12px] leading-4 font-medium">
+                {errors.email}
+              </p>
+            )}
           </div>
 
-          <div className="flex h-12 w-82 flex-col gap-2">
+          <div className="flex h-[94px] w-82 flex-col gap-2">
             <label
-              className="h-[18px] w-full text-[14px] leading-[18px] font-medium"
+              className="w-full text-[14px] leading-[18px] font-medium"
               htmlFor="password"
             >
               비밀번호
             </label>
             <input
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="rounded-1 text-4 text-disabled-300 bg-gray-50 px-4 py-3 leading-5 font-medium"
               id="password"
               placeholder="비밀번호를 입력해주세요."
               type="password"
             />
+            {errors.password && (
+              <p className="text-secondary-negative pt-2 text-[12px] leading-4 font-medium">
+                {errors.password}
+              </p>
+            )}
           </div>
         </div>
 
         <div className="mt-12 flex flex-col gap-6">
-          <button className="bg-disabled-400 text-disabled-300 h-12 w-82 rounded px-4 py-3">
+          <button
+            onClick={handleSignIn}
+            className="bg-disabled-400 text-disabled-300 h-12 w-82 cursor-pointer rounded px-4 py-3"
+          >
             로그인
           </button>
           <button
