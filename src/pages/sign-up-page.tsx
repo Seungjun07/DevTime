@@ -10,6 +10,13 @@ type FormErrors = {
   confirmPassword?: string;
 };
 
+type FormState = {
+  email: string;
+  nickname: string;
+  password: string;
+  confirmPassword: string;
+};
+
 const ERROR_MSG = {
   email: "이메일 형식으로 작성해 주세요.",
   nickname: "닉네임을 입력해 주세요.",
@@ -23,7 +30,7 @@ export default function SignUpPage() {
   // const [password, setPassword] = useState("");
   // const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<FormState>({
     email: "",
     nickname: "",
     password: "",
@@ -31,7 +38,21 @@ export default function SignUpPage() {
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
+  const [touched, setTouched] = useState({
+    email: false,
+    nickname: false,
+    password: false,
+    confirmPassword: false,
+  });
 
+  const [isEmailChecked, setIsEmailChecked] = useState({
+    available: false,
+    message: "",
+  });
+  const [isNicknameChecked, setIsNicknameChecked] = useState({
+    available: false,
+    message: "",
+  });
   const navigate = useNavigate();
 
   function validate() {
@@ -68,7 +89,7 @@ export default function SignUpPage() {
     }
 
     try {
-      const response = await fetch("https://devtime.prokit.app/api/signup", {
+      const response = await fetch(`https://devtime.prokit.app/api/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -78,12 +99,46 @@ export default function SignUpPage() {
 
       const data = await response.json();
 
-      if (data) navigate("/");
+      if (data) navigate("/", { replace: true });
     } catch (error) {
       alert("서버 오류 발생");
     }
   }
 
+  async function handleCheckEmail() {
+    try {
+      const response = await fetch(
+        `https://devtime.prokit.app/api/signup/check-email?email=${encodeURIComponent(form.email)}`,
+      );
+
+      if (!response.ok) throw new Error("이메일 중복 검사 실패");
+      const data = await response.json();
+
+      console.log(data);
+      setIsEmailChecked({ available: data.available, message: data.message });
+    } catch (error) {
+      console.log("에러", error);
+    }
+  }
+
+  async function handleCheckNickname() {
+    try {
+      const response = await fetch(
+        `https://devtime.prokit.app/api/signup/check-nickname?nickname=${encodeURIComponent(form.nickname)}`,
+      );
+
+      if (!response.ok) throw new Error("닉네임 중복 검사 실패");
+      const data = await response.json();
+
+      console.log(data);
+      setIsNicknameChecked({
+        available: data.available,
+        message: data.message,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
   return (
     <div className="m-auto flex h-[790px] w-[420px] flex-1 flex-col items-center gap-10">
       <div className="text-primary-blue text-2xl leading-[30px] font-bold">
@@ -106,10 +161,15 @@ export default function SignUpPage() {
             id="email"
             placeholder="이메일 주소 형식으로 입력해 주세요."
           />
-          <Button />
+          <Button onClick={handleCheckEmail} disabled />
           {errors.email && (
             <p className="text-secondary-negative pt-2 text-[12px] leading-4 font-medium">
               {errors.email}
+            </p>
+          )}
+          {isEmailChecked.available && (
+            <p className="pt-2 text-[12px] leading-4 font-medium text-green-500">
+              {isEmailChecked.message}
             </p>
           )}
         </div>
@@ -131,10 +191,15 @@ export default function SignUpPage() {
             id="nickname"
             placeholder="닉네임을 입력해 주세요."
           />
-          <Button />
+          <Button onClick={handleCheckNickname} disabled />
           {errors.nickname && (
             <p className="text-secondary-negative pt-2 text-[12px] leading-4 font-medium">
               {errors.nickname}
+            </p>
+          )}
+          {isNicknameChecked.available && (
+            <p className="pt-2 text-[12px] leading-4 font-medium text-green-500">
+              {isNicknameChecked.message}
             </p>
           )}
         </div>

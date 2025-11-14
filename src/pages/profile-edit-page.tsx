@@ -1,19 +1,10 @@
+import ProfileImage from "../components/profile/profile-image";
+import StackItem from "../components/stack-item";
+
 export default function ProfileEditPage() {
   return (
-    <div className="flex flex-col gap-9 rounded-xl bg-amber-50 p-9">
-      <div className="flex flex-col gap-2">
-        <p className="text-sm leading-[18px] font-medium text-gray-600">
-          프로필 이미지
-        </p>
-        <div className="flex gap-3">
-          <div className="border-primary-blue h-30 w-30 border bg-white p-10">
-            이미지
-          </div>
-          <p className="self-end text-sm leading-4.5 font-medium text-gray-500">
-            5MB 미만의 .png, .jpg 파일
-          </p>
-        </div>
-      </div>
+    <div className="flex flex-col gap-9 rounded-xl bg-white p-9">
+      <ProfileImage />
 
       <div className="flex gap-18">
         <div className="flex flex-col gap-6">
@@ -148,19 +139,25 @@ export default function ProfileEditPage() {
             </div>
           </div>
 
-          <div>
-            <label
-              htmlFor="studyStack"
-              className="text-[14px] leading-[18px] font-medium text-gray-600"
-            >
-              공부/사용 중인 기술 스택(선택)
-            </label>
-            <div>
-              <input
-                id="studyStack"
-                className="placeholder-custom w-105 rounded bg-gray-50 px-4 py-3"
-                placeholder="기술 스택을 검색해 등록해 주세요."
-              />
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="studyStack"
+                className="text-[14px] leading-[18px] font-medium text-gray-600"
+              >
+                공부/사용 중인 기술 스택(선택)
+              </label>
+              <div>
+                <input
+                  id="studyStack"
+                  className="placeholder-custom w-105 rounded bg-gray-50 px-4 py-3"
+                  placeholder="기술 스택을 검색해 등록해 주세요."
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <StackItem />
             </div>
           </div>
         </div>

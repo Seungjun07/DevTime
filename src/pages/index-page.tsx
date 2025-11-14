@@ -25,31 +25,86 @@ export default function IndexPage() {
     setTodo("");
   }
 
-  // async function createTimer() {
-  //   try {
-  //     const response = await fetch(
-  //       `${import.meta.env.VITE_API_URL}/api/timers`,
-  //     );
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // }
+  const [timerId, setTimerId] = useState("");
+  async function createTimer() {
+    const tokenObj = JSON.parse(localStorage.getItem("token") || "{}");
+    const accessToken = tokenObj.accessToken;
 
-  // async function fetchTimer() {
-  //   const isLogin = JSON.parse(localStorage.getItem("token") || "{}");
+    if (!accessToken) {
+      console.log("로그인 필요");
+      return;
+    }
 
-  //   if (isLogin.isLogin) {
-  //     const response = await fetch("https://devtime.prokit.app/api/timers");
+    try {
+      const response = await fetch(`https://devtime.prokit.app/api/timers`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ todayGoal, tasks: [...todos] }),
+      });
 
-  //     console.log(response);
-  //     const data = await response.json();
-  //     console.log(data);
-  //   }
-  // }
+      if (!response.ok) throw new Error("타이머 생성 실패");
 
-  // useEffect(() => {
-  //   fetchTimer();
-  // }, []);
+      const data = await response.json();
+      console.log(data);
+      // 타이머 Id값 관리 필요 data.timerId
+      setTimerId(data.timerId);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async function deleteTimer() {
+    const tokenObj = JSON.parse(localStorage.getItem("token") || "{}");
+    const accessToken = tokenObj.accessToken;
+
+    if (!accessToken) {
+      console.log("로그인 필요");
+      return;
+      // 나중에 모달창
+    }
+
+    const response = await fetch(
+      `https://devtime.prokit.app/api/timers/${timerId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+
+    console.log(response);
+    const data = await response.json();
+    console.log(data);
+  }
+
+  async function fetchTimer() {
+    const tokenObj = JSON.parse(localStorage.getItem("token") || "{}");
+    const accessToken = tokenObj.accessToken;
+
+    if (!accessToken) {
+      console.log("로그인 필요");
+      return;
+      // 나중에 모달창
+    }
+
+    const response = await fetch("https://devtime.prokit.app/api/timers", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    console.log(response);
+    const data = await response.json();
+    console.log(data);
+  }
+
+  useEffect(() => {
+    fetchTimer();
+  }, []);
 
   return (
     <div>
@@ -82,7 +137,11 @@ export default function IndexPage() {
           alt="타이머 시작 버튼"
         />
         <img src={enabledPauseIcon} alt="타이머 중지 버튼" />
-        <img src={enabledFinishIcon} alt="타이머 종료 버튼" />
+        <img
+          onClick={deleteTimer}
+          src={enabledFinishIcon}
+          alt="타이머 종료 버튼"
+        />
       </div>
 
       {isOpen && (
@@ -94,6 +153,7 @@ export default function IndexPage() {
                 value={todayGoal}
                 onChange={(e) => setTodayGoal(e.target.value)}
                 placeholder="오늘의 목표"
+                maxLength={30}
                 className="mb-4 p-9 text-xl font-bold"
               />
 
@@ -102,6 +162,7 @@ export default function IndexPage() {
                 <div className="relative flex bg-gray-400 px-6 py-4">
                   <input
                     id="todo"
+                    maxLength={30}
                     value={todo}
                     onChange={(e) => setTodo(e.target.value)}
                     placeholder="할 일을 추가해 주세요."
@@ -128,6 +189,7 @@ export default function IndexPage() {
               </button>
               <button
                 disabled={isDisabled}
+                onClick={createTimer}
                 className={`ronuded w-[146px] cursor-pointer px-4 py-3 text-[18px] leading-[22px] font-semibold ${isDisabled ? "disabled-button" : "bg-primary-blue/10 text-primary-blue"}`}
               >
                 타이머 시작하기

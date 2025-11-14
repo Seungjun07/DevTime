@@ -1,46 +1,77 @@
 import { useNavigate } from "react-router-dom";
 import logo from "./../assets/logo-vertical.svg";
 import symbolLogo from "./../assets/Symbol-Logo.png";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ERROR } from "../lib/error";
 
-type LoginError = {
-  email?: string;
-  password?: string;
-};
+// type LoginError = {
+//   email?: string;
+//   password?: string;
+// };
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const [errors, setErrors] = useState<LoginError>({});
+  const [errors, setErrors] = useState({ email: "", password: "" });
+  // const [isValid, setIsValid] = useState(false);
 
-  function validate() {
-    const newErrors: LoginError = {};
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
+  const navigate = useNavigate();
 
-    if (email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = ERROR.email;
+  function validateEmail(emailValue: string) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailValue.trim() || !emailRegex.test(emailValue)) {
+      return "이메일 형식으로 작성해 주세요.";
     }
 
-    if (!password || !/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/.test(password)) {
-      newErrors.password = ERROR.password;
-    }
-
-    return newErrors;
+    return "";
   }
 
-  const navigate = useNavigate();
-  const [isLogin, setIsLogin] = useState(false);
+  function validatePassword(passwordValue: string) {
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    if (!passwordValue.trim() || !passwordRegex.test(passwordValue)) {
+      return "비밀번호는 8자 이상, 영문과 숫자 조합이어야 합니다.";
+    }
+
+    return "";
+  }
+
+  useEffect(() => {
+    const emailError = emailTouched ? validateEmail(email) : "";
+    const passwordError = passwordTouched ? validatePassword(password) : "";
+
+    setErrors({ email: emailError, password: passwordError });
+  }, [email, password, emailTouched, passwordTouched]);
+
+  const isValid = !validateEmail(email) && !validatePassword(password);
+  // function validate() {
+  //   const newErrors: LoginError = {};
+
+  //   if (email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  //     newErrors.email = ERROR.email;
+  //   }
+
+  //   if (!password || !/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/.test(password)) {
+  //     newErrors.password = ERROR.password;
+  //   }
+
+  //   return newErrors;
+  // }
 
   async function handleSignIn() {
-    // const newErrors = validate();
+    setEmailTouched(true);
+    setPasswordTouched(true);
+    const emailError = validateEmail(email);
+    const passwordError = validatePassword(password);
 
-    // if (Object.keys(newErrors).length > 0) {
-    //   setErrors(newErrors);
-    //   return;
-    // }
+    if (emailError || passwordError) {
+      setErrors({ email: emailError, password: passwordError });
+      return;
+    }
 
-    const response = await fetch("https://devtime.prokit.app/api/auth/login", {
+    const response = await fetch(`https://devtime.prokit.app/api/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -90,10 +121,11 @@ export default function SignInPage() {
             <input
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="rounded-1 text-4 text-disabled-300 bg-gray-50 px-4 py-3 leading-5 font-medium"
+              className={`rounded-1 text-4 text-disabled-300 border bg-gray-50 px-4 py-3 leading-5 font-medium ${errors.email ? "border-red-500 focus:ring-2 focus:ring-red-400" : "border-gray-300 focus:ring-2 focus:ring-blue-400"}`}
               id="email"
               placeholder="이메일 주소를 입력해주세요."
               type="email"
+              onBlur={() => setEmailTouched(true)}
             />
             {errors.email && (
               <p className="text-secondary-negative pt-2 text-[12px] leading-4 font-medium">
@@ -112,7 +144,8 @@ export default function SignInPage() {
             <input
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="rounded-1 text-4 text-disabled-300 bg-gray-50 px-4 py-3 leading-5 font-medium"
+              onBlur={() => setPasswordTouched(true)}
+              className={`rounded-1 text-4 text-disabled-300 border bg-gray-50 px-4 py-3 leading-5 font-medium ${errors.password ? "border-red-500 focus:ring-2 focus:ring-red-400" : "border-gray-300 focus:ring-2 focus:ring-blue-400"}`}
               id="password"
               placeholder="비밀번호를 입력해주세요."
               type="password"
@@ -127,8 +160,9 @@ export default function SignInPage() {
 
         <div className="mt-12 flex flex-col gap-6">
           <button
+            disabled={!isValid}
             onClick={handleSignIn}
-            className="bg-disabled-400 text-disabled-300 h-12 w-82 cursor-pointer rounded px-4 py-3"
+            className={` ${isValid ? "bg-primary-blue text-white hover:bg-blue-600" : "bg-disabled-400 text-disabled-300 cursor-not-allowed"} h-12 w-82 cursor-pointer rounded px-4 py-3`}
           >
             로그인
           </button>

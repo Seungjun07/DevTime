@@ -8,6 +8,7 @@ import GlobalLayout from "./layout/global-layout";
 import UserInfoLayout from "./layout/user-info-layout";
 import RankingPage from "./pages/ranking-page";
 import ProfileEditPage from "./pages/profile-edit-page";
+import DashboardPage from "./pages/dashboard-page";
 
 export default function RootRoute() {
   return (
@@ -16,6 +17,7 @@ export default function RootRoute() {
         <Route path="/" element={<IndexPage />} />
         <Route path="/my-page" element={<MyPage />} />
         <Route path="/ranking" element={<RankingPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/my-page/edit" element={<ProfileEditPage />} />
       </Route>
 
