@@ -1,8 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import logo from "./../assets/logo-vertical.svg";
 import symbolLogo from "./../assets/Symbol-Logo.png";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ERROR } from "../lib/error";
+import { setAccessToken, setRefreshToken } from "../utils/token";
 
 // type LoginError = {
 //   email?: string;
@@ -12,6 +13,8 @@ import { ERROR } from "../lib/error";
 export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const emailRef = useRef<HTMLInputElement>(null);
 
   const [errors, setErrors] = useState({ email: "", password: "" });
   // const [isValid, setIsValid] = useState(false);
@@ -71,31 +74,34 @@ export default function SignInPage() {
       return;
     }
 
-    const response = await fetch(`https://devtime.prokit.app/api/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: email,
-        password: password,
-      }),
-    });
+    try {
+      const response = await fetch(
+        `https://devtime.prokit.app/api/auth/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email,
+            password: password,
+          }),
+        },
+      );
 
-    if (!response.ok) throw new Error("로그인 실패");
-    const data = await response.json();
-    console.log(data);
+      if (!response.ok) throw new Error("로그인 실패");
+      const data = await response.json();
+      console.log(data);
 
-    localStorage.setItem(
-      "token",
-      JSON.stringify({
-        accessToken: data.accessToken,
-        refreshToken: data.refreshToken,
-      }),
-    );
+      setAccessToken(data.accessToken);
+      setRefreshToken(data.refreshToken);
 
-    if (data.isFirstLogin) {
-      navigate("/profile", { replace: true });
-    } else {
-      navigate("/", { replace: true });
+      if (data.isFirstLogin) {
+        navigate("/profile", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
+    } catch (error) {
+      alert("로그인 정보를 다시 확인해 주세요");
+      emailRef.current?.focus();
     }
   }
   return (
@@ -119,6 +125,7 @@ export default function SignInPage() {
               이메일
             </label>
             <input
+              ref={emailRef}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className={`rounded-1 text-4 text-disabled-300 border bg-gray-50 px-4 py-3 leading-5 font-medium ${errors.email ? "border-red-500 focus:ring-2 focus:ring-red-400" : "border-gray-300 focus:ring-2 focus:ring-blue-400"}`}

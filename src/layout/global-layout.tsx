@@ -5,7 +5,7 @@ export default function GlobalLayout() {
 
   return (
     <div className="flex min-h-screen flex-col bg-linear-to-br from-[rgba(246,247,249,1)] from-0% to-[rgba(233,236,245,1)] to-100%">
-      <header className="text-font-secondary] m-auto flex h-10 w-full max-w-300 justify-between pt-4 font-semibold">
+      <header className="text-font-secondary m-auto flex h-10 w-full max-w-300 justify-between pt-4 font-semibold">
         <div className="flex h-full items-center gap-12">
           <Link to={"/"}>
             <img src={logo} alt="devTime의 로고" />
@@ -13,6 +13,8 @@ export default function GlobalLayout() {
           <div className="flex gap-9">
             <Link to={"/dashboard"}>대시보드</Link>
             <Link to={"/ranking"}>랭킹</Link>
+            <Link to={"/profile"}>프로필</Link>
+            <Link to={"/my-page"}>마이페이지 임시</Link>
           </div>
         </div>
 

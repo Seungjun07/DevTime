@@ -184,7 +184,7 @@ export default function ProfileDetailPage() {
       </div>
 
       <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-2">
+        <div className="relative flex flex-col gap-2">
           <label
             htmlFor="studyStack"
             className="text-[14px] leading-[18px] font-medium text-gray-600"
@@ -199,42 +199,27 @@ export default function ProfileDetailPage() {
               className="placeholder-custom w-105 rounded bg-gray-50 px-4 py-3"
               placeholder="기술 스택을 검색해 등록해 주세요."
             />
+            {suggestions.length > 0 && (
+              <ul className="scrollbar-hide absolute top-full z-10 mt-1 max-h-50 w-full overflow-y-auto rounded border bg-white shadow">
+                {suggestions.map((tech) => (
+                  <li
+                    className="cursor-pointer bg-blue-500 p-2 hover:bg-gray-100"
+                    key={tech.id}
+                  >
+                    {tech.name}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
-          {suggestions.length > 0 && (
-            <ul className="absolute z-10 mt-1 max-h-40 w-full overflow-y-auto rounded border bg-white shadow">
-              {suggestions.map((tech) => (
-                <li
-                  className="cursor-pointer bg-blue-500 p-2 hover:bg-gray-100"
-                  key={tech.id}
-                >
-                  {tech.name}
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
 
         <div className="flex flex-wrap gap-2"></div>
       </div>
 
       <ProfileImage />
-      {/* <div className="h-[70px]">
-        <label
-          htmlFor="profileImage"
-          className="text-[14px] leading-[18px] font-medium text-gray-600"
-        >
-          프로필 이미지
-        </label>
-        <div>
-          <input
-            id="profileImage"
-            className="placeholder-custom w-105 rounded bg-gray-50 px-4 py-3"
-            placeholder="기술 스택을 검색해 등록해 주세요."
-          />
-        </div>
-      </div> */}
 
-      <button className="bg-disabled-400 text-disabled-300 h-12 w-105 rounded px-4 py-3 text-lg leading-[22px] font-semibold">
+      <button className="bg-disabled-400 text-disabled-300 h-12 w-105 cursor-pointer rounded px-4 py-3 text-lg leading-[22px] font-semibold">
         저장하기
       </button>
 
