@@ -9,12 +9,17 @@ import tagIcon from "./../assets/tag.png";
 import editIcon from "./../assets/edit.png";
 import trashIcon from "./../assets/trash.png";
 import TodoItem from "../components/todo-item";
+import { fetchWithAuth } from "../api/auth";
+import TodosModal from "../components/modal/todos-modal";
 
 export default function IndexPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [todayGoal, setTodayGoal] = useState("");
   const [todos, setTodos] = useState<string[]>([]);
   const [todo, setTodo] = useState("");
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const isDisabled = todos.length < 1 || !todayGoal.trim();
 
@@ -25,179 +30,99 @@ export default function IndexPage() {
     setTodo("");
   }
 
-  const [timerId, setTimerId] = useState("");
-  async function createTimer() {
-    const tokenObj = JSON.parse(localStorage.getItem("token") || "{}");
-    const accessToken = tokenObj.accessToken;
-
-    if (!accessToken) {
-      console.log("로그인 필요");
-      return;
-    }
-
-    try {
-      const response = await fetch(`https://devtime.prokit.app/api/timers`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ todayGoal, tasks: [...todos] }),
-      });
-
-      if (!response.ok) throw new Error("타이머 생성 실패");
-
-      const data = await response.json();
-      console.log(data);
-      // 타이머 Id값 관리 필요 data.timerId
-      setTimerId(data.timerId);
-    } catch (error) {
-      console.log(error);
-    }
-  }
+  const storedTimer = localStorage.getItem("timerId");
+  const timerId = storedTimer ? JSON.parse(storedTimer) : null;
 
   async function deleteTimer() {
-    const tokenObj = JSON.parse(localStorage.getItem("token") || "{}");
-    const accessToken = tokenObj.accessToken;
-
-    if (!accessToken) {
-      console.log("로그인 필요");
-      return;
-      // 나중에 모달창
-    }
-
-    const response = await fetch(
+    const data = await fetchWithAuth(
       `https://devtime.prokit.app/api/timers/${timerId}`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      },
+      "DELETE",
     );
 
-    console.log(response);
-    const data = await response.json();
+    localStorage.removeItem("timerId");
     console.log(data);
   }
 
   async function fetchTimer() {
-    const tokenObj = JSON.parse(localStorage.getItem("token") || "{}");
-    const accessToken = tokenObj.accessToken;
+    setIsLoading(true);
 
-    if (!accessToken) {
-      console.log("로그인 필요");
-      return;
-      // 나중에 모달창
+    try {
+      const data = await fetchWithAuth(
+        "https://devtime.prokit.app/api/timers",
+        "GET",
+      );
+
+      console.log("현재 타이머", data);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.message === "NOT_LOGGED_IN") {
+          setShowLoginModal(true);
+        }
+      }
+    } finally {
+      setIsLoading(false);
     }
-
-    const response = await fetch("https://devtime.prokit.app/api/timers", {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-
-    console.log(response);
-    const data = await response.json();
-    console.log(data);
   }
 
   useEffect(() => {
     fetchTimer();
   }, []);
 
+  if (isLoading) return <div>로딩 중...</div>;
+
   return (
     <div>
-      <div className="text-center text-7xl">WELCOME</div>
-      <div className="pretendard pt-2.5 pb-[50px] text-center text-[10px] leading-3 font-normal">
+      {/* {showLoginModal&&<} */}
+      <h1 className="text-center text-7xl">WELCOME</h1>
+      <p className="pretendard pt-2.5 pb-[50px] text-center text-[10px] leading-3 font-normal">
         DevTime을 사용하려면 로그인이 필요합니다
-      </div>
+      </p>
 
-      <div className="text-primary-blue flex justify-center gap-4">
-        <div className="border-primary-blue from-primary-blue/0 to-primary-blue/20 h-[300px] w-[260px] rounded-xl border bg-linear-to-br from-0% to-100% px-2">
-          <div className="digit-time">00</div>
-          <div className="py-9 text-center">HOURS</div>
-        </div>
-        <p>:</p>
-        <div className="border-primary-blue from-primary-blue/0 to-primary-blue/20 h-[300px] w-[260px] rounded-xl border bg-linear-to-br from-0% to-100% px-2">
-          <div className="digit-time">00</div>
-          <div className="py-9 text-center">MINUTES</div>
-        </div>
-        <p>:</p>
-        <div className="border-primary-blue from-primary-blue/0 to-primary-blue/20 h-[300px] w-[260px] rounded-xl border bg-linear-to-br from-0% to-100% px-2">
-          <div className="digit-time">00</div>
-          <div className="py-9 text-center">SECONDS</div>
-        </div>
-      </div>
-
-      <div className="m-auto mt-20 flex justify-center gap-20">
-        <img
-          onClick={() => setIsOpen(true)}
-          src={startIcon}
-          alt="타이머 시작 버튼"
-        />
-        <img src={enabledPauseIcon} alt="타이머 중지 버튼" />
-        <img
-          onClick={deleteTimer}
-          src={enabledFinishIcon}
-          alt="타이머 종료 버튼"
-        />
-      </div>
-
-      {isOpen && (
-        <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-          {/* 모달 박스 */}
-          <div className="flex h-[828px] w-160 flex-col justify-between rounded-lg bg-white shadow-lg">
-            <div>
-              <input
-                value={todayGoal}
-                onChange={(e) => setTodayGoal(e.target.value)}
-                placeholder="오늘의 목표"
-                maxLength={30}
-                className="mb-4 p-9 text-xl font-bold"
-              />
-
-              <div className="m-auto flex w-142 flex-col">
-                <label htmlFor="todo">할 일 목록</label>
-                <div className="relative flex bg-gray-400 px-6 py-4">
-                  <input
-                    id="todo"
-                    maxLength={30}
-                    value={todo}
-                    onChange={(e) => setTodo(e.target.value)}
-                    placeholder="할 일을 추가해 주세요."
-                  />
-                  <button onClick={handleAddTodo} className="absolute right-6">
-                    추가
-                  </button>
-                </div>
-
-                <div className="scrollbar-hide mt-9 flex h-115 w-142 flex-col gap-3 overflow-y-auto">
-                  {todos.map((todo, i) => (
-                    <TodoItem key={i} todo={todo} />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-4 p-9">
-              <button
-                className="text-primary-blue h-12 w-21 cursor-pointer rounded bg-gray-50 px-4 py-3 text-[18px] leading-[22px] font-semibold"
-                onClick={() => setIsOpen(false)}
-              >
-                취소
-              </button>
-              <button
-                disabled={isDisabled}
-                onClick={createTimer}
-                className={`ronuded w-[146px] cursor-pointer px-4 py-3 text-[18px] leading-[22px] font-semibold ${isDisabled ? "disabled-button" : "bg-primary-blue/10 text-primary-blue"}`}
-              >
-                타이머 시작하기
-              </button>
-            </div>
+      <div className="m-auto flex w-258 flex-col gap-20">
+        <div className="text-primary-blue flex justify-between gap-12">
+          <div className="border-primary-blue from-primary-blue/0 to-primary-blue/20 h-[300px] w-[260px] rounded-xl border bg-linear-to-br from-0% to-100% px-2">
+            <div className="digit-time">00</div>
+            <div className="py-9 text-center">HOURS</div>
+          </div>
+          <p>:</p>
+          <div className="border-primary-blue from-primary-blue/0 to-primary-blue/20 h-[300px] w-[260px] rounded-xl border bg-linear-to-br from-0% to-100% px-2">
+            <div className="digit-time">00</div>
+            <div className="py-9 text-center">MINUTES</div>
+          </div>
+          <p>:</p>
+          <div className="border-primary-blue from-primary-blue/0 to-primary-blue/20 h-[300px] w-[260px] rounded-xl border bg-linear-to-br from-0% to-100% px-2">
+            <div className="digit-time">00</div>
+            <div className="py-9 text-center">SECONDS</div>
           </div>
         </div>
-      )}
+
+        <div className="relative flex items-center gap-[134px]">
+          <div className="m-auto flex items-end justify-end gap-20">
+            <img
+              onClick={() => setIsOpen(true)}
+              src={startIcon}
+              alt="타이머 시작 버튼"
+            />
+            <img src={enabledPauseIcon} alt="타이머 중지 버튼" />
+            <img
+              onClick={deleteTimer}
+              src={enabledFinishIcon}
+              alt="타이머 종료 버튼"
+            />
+          </div>
+
+          {timerId && (
+            <div className="absolute right-0 flex gap-6">
+              <div className="h-16 w-16 rounded-4xl bg-white p-2">
+                할 일 목록
+              </div>
+              <div className="h-16 w-16 rounded-4xl bg-white p-2">초기화</div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {isOpen && <TodosModal onClick={() => setIsOpen(false)} />}
     </div>
   );
 }

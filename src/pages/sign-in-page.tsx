@@ -3,12 +3,17 @@ import logo from "./../assets/logo-vertical.svg";
 import symbolLogo from "./../assets/Symbol-Logo.png";
 import { useEffect, useRef, useState } from "react";
 import { ERROR } from "../lib/error";
-import { setAccessToken, setRefreshToken } from "../utils/token";
+import { deleteToken, setAccessToken, setRefreshToken } from "../utils/token";
+import DuplicatedModal from "../components/modal/duplicated-modal";
 
-// type LoginError = {
-//   email?: string;
-//   password?: string;
-// };
+type LoginData = {
+  accessToken: string;
+  isDuplicateLogin: boolean;
+  isFirstLogin: boolean;
+  message: string;
+  refreshToken: string;
+  success: boolean;
+};
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -62,6 +67,8 @@ export default function SignInPage() {
 
   //   return newErrors;
   // }
+  const [isDuplicateLogin, setIsDuplicateLogin] = useState(false);
+  const [loginData, setLoginData] = useState<LoginData | null>(null);
 
   async function handleSignIn() {
     setEmailTouched(true);
@@ -88,8 +95,16 @@ export default function SignInPage() {
       );
 
       if (!response.ok) throw new Error("로그인 실패");
-      const data = await response.json();
+
+      const data: LoginData = await response.json();
       console.log(data);
+
+      // 중복 로그인 처리
+      if (data.isDuplicateLogin) {
+        setLoginData(data);
+        console.log("중복 로그인");
+        setIsDuplicateLogin(data.isDuplicateLogin);
+      }
 
       setAccessToken(data.accessToken);
       setRefreshToken(data.refreshToken);
@@ -102,8 +117,27 @@ export default function SignInPage() {
     } catch (error) {
       alert("로그인 정보를 다시 확인해 주세요");
       emailRef.current?.focus();
+      setPassword("");
     }
   }
+
+  function handleDuplicateConfirm() {
+    if (!loginData) return;
+
+    deleteToken();
+    setAccessToken(loginData.accessToken);
+    setRefreshToken(loginData.refreshToken);
+
+    if (loginData.isFirstLogin) {
+      navigate("/profile", { replace: true });
+    } else {
+      navigate("/", { replace: true });
+    }
+
+    setIsDuplicateLogin(false);
+    setLoginData(null);
+  }
+
   return (
     <div
       className="flex min-h-screen bg-cover bg-no-repeat"
@@ -181,6 +215,9 @@ export default function SignInPage() {
           </button>
         </div>
       </div>
+      {isDuplicateLogin && (
+        <DuplicatedModal handleConfirm={() => handleDuplicateConfirm()} />
+      )}
     </div>
   );
 }

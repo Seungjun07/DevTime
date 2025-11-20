@@ -1,27 +1,16 @@
 import { useEffect, useState } from "react";
 import RankItem from "../components/rank-item";
 import { type RankingItem } from "../types";
+import { fetchWithAuth } from "../api/auth";
 
 export default function RankingPage() {
   const [rankings, setRankins] = useState<RankingItem[]>([]);
   async function fetchRanking() {
     try {
-      const tokenObj = JSON.parse(localStorage.getItem("token") || "{}");
-      const accessToken = tokenObj.accessToken;
-
-      if (!accessToken) {
-        console.log("로그인 필요");
-        return;
-        // 나중에 모달창
-      }
-
-      const response = await fetch(`https://devtime.prokit.app/api/rankings`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      if (!response.ok) throw new Error("랭킹 불러오기 실패");
-      const data = await response.json();
+      const data = await fetchWithAuth(
+        `https://devtime.prokit.app/api/rankings`,
+        "GET",
+      );
       console.log(data);
       setRankins(data.data.rankings);
     } catch (error) {

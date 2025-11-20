@@ -15,6 +15,20 @@ export interface RankingItem {
 }
 
 export interface TechStack {
-  id: number;
+  id: string;
   name: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface MyProfile {
+  email: string;
+  nickname: string;
+  profile: {
+    career: string;
+    goal: string;
+    profileImage: string;
+    purpose: string;
+    techStacks: string[];
+  };
 }

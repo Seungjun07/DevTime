@@ -5,14 +5,14 @@ import {
   setAccessToken,
 } from "../utils/token";
 
-export async function fetchWithAuth(url: string) {
+export async function fetchWithAuth(url: string, method: string) {
   const accessToken = getAccessToken();
   const headers = {
     Authorization: accessToken ? `Bearer ${accessToken}` : "",
     "Content-Type": "application/json",
   };
 
-  let response = await fetch(url, { headers });
+  let response = await fetch(url, { method: method, headers });
 
   // AccessToken 만료 시 (401)
   if (response.status === 401) {
@@ -48,7 +48,7 @@ export async function fetchWithAuth(url: string) {
 
     headers.Authorization = `Bearer ${data.accessToken}`;
 
-    response = await fetch(url, { headers });
+    response = await fetch(url, { method: method, headers });
 
     if (!response.ok) throw new Error("API_FAILED");
   }

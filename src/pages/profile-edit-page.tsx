@@ -1,10 +1,118 @@
+import { useEffect, useState } from "react";
 import ProfileImage from "../components/profile/profile-image";
 import StackItem from "../components/stack-item";
+import { getAccessToken } from "../utils/token";
+import { type MyProfile, type TechStack } from "../types";
 
 export default function ProfileEditPage() {
+  const [profile, setProfile] = useState<MyProfile>();
+  async function getProfile() {
+    try {
+      const accessToken = getAccessToken();
+
+      if (!accessToken) throw new Error("로그인 필요");
+
+      const response = await fetch("https://devtime.prokit.app/api/profile", {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("프로필 불러오기 실패");
+      const data = await response.json();
+
+      setProfile(data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    getProfile();
+  }, []);
+
+  const [purpose, setPurpose] = useState<string>(
+    profile?.profile.purpose || "",
+  );
+
+  const [keyword, setKeyword] = useState<string>("");
+  const [suggestions, setSuggestions] = useState<TechStack[]>([]);
+  const [selectedTechStacks, setSelectedTechStacks] = useState<TechStack[]>([]);
+
+  useEffect(() => {
+    if (!keyword) {
+      setSuggestions([]);
+      return;
+    }
+
+    const delayDebounce = setTimeout(async () => {
+      try {
+        const accessToken = getAccessToken();
+
+        if (!accessToken) {
+          console.log("로그인 필요");
+          return;
+        }
+        const response = await fetch(
+          `https://devtime.prokit.app/api/tech-stacks?keyword=${keyword}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          },
+        );
+
+        if (!response.ok) throw new Error("기술 스택 불러오기 실패");
+        const data = await response.json();
+
+        setSuggestions(data.results || []);
+
+        console.log(suggestions);
+      } catch (error) {
+        console.log(error);
+      }
+    }, 300); // 0.3초 딜레이
+
+    return () => clearTimeout(delayDebounce);
+  }, [keyword]);
+
+  async function createNewStack() {
+    try {
+      const accessToken = getAccessToken();
+
+      if (!accessToken) throw new Error("토큰 만료 - 로그인 실패");
+
+      console.log(typeof keyword);
+      const response = await fetch(
+        "https://devtime.prokit.app/api/tech-stacks",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name: keyword }),
+        },
+      );
+
+      if (!response.ok) throw new Error("기술 스택 생성 실패");
+      const data = await response.json();
+      console.log(data);
+      setSelectedTechStacks((prev) => [...prev, data.techStack]);
+      setKeyword("");
+      setSuggestions([]);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  function deleteStack(id: string) {
+    setSelectedTechStacks((prev) => prev.filter((stack) => stack.id !== id));
+  }
+
   return (
     <div className="flex flex-col gap-9 rounded-xl bg-white p-9">
-      <ProfileImage />
+      {/* <ProfileImage /> */}
 
       <div className="flex gap-18">
         <div className="flex flex-col gap-6">
@@ -19,7 +127,7 @@ export default function ProfileEditPage() {
               <input
                 id="nickname"
                 className="h-11 rounded bg-gray-50 px-4 py-3"
-                placeholder="nickname"
+                placeholder={profile?.nickname}
               />
               <button className="bg-disabled-200 h-11 px-4 py-3">
                 중복 확인
@@ -41,11 +149,15 @@ export default function ProfileEditPage() {
                 className="placeholder-custom w-105 rounded bg-gray-50 px-4 py-3"
               >
                 <option value={""}>공부의 목적을 선택해 주세요.</option>
-                <option value={""}>취업 준비</option>
-                <option value={""}>이직 준비</option>
-                <option value={""}>단순 개발 역량 향상</option>
-                <option value={""}>회사 내 프로젝트 원활하게 수행</option>
-                <option value={""}>기타(직접 입력)</option>
+                <option value={"취업 준비"}>취업 준비</option>
+                <option value={"이직 준비"}>이직 준비</option>
+                <option value={"단순 개발 역량 향상"}>
+                  단순 개발 역량 향상
+                </option>
+                <option value={"회사 내 프로젝트 원활하게 수행"}>
+                  회사 내 프로젝트 원활하게 수행
+                </option>
+                <option value={"기타"}>기타(직접 입력)</option>
               </select>
               {/* <input
                 className="placeholder-custom w-105 rounded bg-gray-50 px-4 py-3"
@@ -78,14 +190,14 @@ export default function ProfileEditPage() {
 
           <div className="h-[70px]">
             <label
-              htmlFor="password"
+              htmlFor="confirmPassword"
               className="text-[14px] leading-[18px] font-medium text-gray-600"
             >
               새 비밀번호 재입력
             </label>
             <div>
               <input
-                id="password"
+                id="confirmPassword"
                 className="placeholder-custom w-105 rounded bg-gray-50 px-4 py-3"
                 type="password"
                 placeholder="비밀번호를 한 번 더 입력해 주세요."
@@ -134,7 +246,11 @@ export default function ProfileEditPage() {
               <input
                 id="studyGoal"
                 className="placeholder-custom w-105 rounded bg-gray-50 px-4 py-3"
-                placeholder="공부 목표를 입력해 주세요."
+                placeholder={
+                  profile?.profile.purpose
+                    ? `${profile?.profile.purpose}`
+                    : "공부 목표를 입력해 주세요."
+                }
               />
             </div>
           </div>
@@ -157,7 +273,7 @@ export default function ProfileEditPage() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <StackItem />
+              {/* <StackItem techStacks={}, deleteStack={deleteStack}/> */}
             </div>
           </div>
         </div>
