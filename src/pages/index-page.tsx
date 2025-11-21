@@ -4,7 +4,7 @@ import pauseIcon from "./../assets/Pause.png";
 import enabledPauseIcon from "./../assets/Pause-enabled.png";
 import finishIcon from "./../assets/Finish.png";
 import enabledFinishIcon from "./../assets/Finish-enabled.png";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import tagIcon from "./../assets/tag.png";
 import editIcon from "./../assets/edit.png";
 import trashIcon from "./../assets/trash.png";
@@ -12,41 +12,41 @@ import TodoItem from "../components/todo-item";
 import { fetchWithAuth } from "../api/auth";
 import TodosModal from "../components/modal/todo/todos-modal";
 import { getAccessToken } from "../utils/token";
-import { type MyProfile } from "../types";
+import { type SplitTime, type MyProfile } from "../types";
 import resetIcon from "./../assets/Reset.png";
 import todoIcon from "./../assets/TODO.png";
 import CreateTodos from "../components/modal/todo/create-todos";
 import ManageTodos from "../components/modal/todo/manage-todos";
+import StudyTimer from "../components/timer/study-timer";
 
 export default function IndexPage() {
   const [isCreateTodosModalOpen, setIsCreateTodosModalOpen] = useState(false);
   const [isUpdateTodosModalOpen, setIsUpdateTodosModalOpen] = useState(false);
-  const [todayGoal, setTodayGoal] = useState("");
-  const [todos, setTodos] = useState<string[]>([]);
-  const [todo, setTodo] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  const isDisabled = todos.length < 1 || !todayGoal.trim();
-
-  function handleAddTodo() {
-    if (todo.trim() === "") return;
-
-    setTodos([...todos, todo]);
-    setTodo("");
-  }
-
   const storedTimer = localStorage.getItem("timerId");
   const timerId = storedTimer ? JSON.parse(storedTimer) : null;
 
+  const [timer, setTimer] = useState();
+  const [startTime, setStartTime] = useState<Date | null>(null);
+
   async function deleteTimer() {
-    const data = await fetchWithAuth(
+    if (!accessToken) throw new Error("로그인 필요");
+    const data = await fetch(
       `https://devtime.prokit.app/api/timers/${timerId}`,
-      "DELETE",
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
     );
 
+    resetTimer();
     localStorage.removeItem("timerId");
+    localStorage.removeItem("studyLogId");
     console.log(data);
   }
   const [profile, setProfile] = useState<MyProfile>();
@@ -89,6 +89,27 @@ export default function IndexPage() {
       if (!response.ok) throw new Error("타이머 불러오기 실패");
       const data = await response.json();
       console.log("현재 타이머", data);
+      setTimer(data);
+
+      setSplitTimes(data.splitTimes || []);
+
+      if (data.startTime) {
+        const lastUpdate = new Date(data.lastUpdateTime);
+        const start = new Date(data.startTime);
+        const now = new Date();
+
+        if (now > lastUpdate) splitByDate(lastUpdate, now);
+
+        setStartTime(now);
+        const elapsedMs = now.getTime() - start.getTime();
+        setSeconds(Math.floor(elapsedMs / 1000));
+        setIsRunning(true);
+        intervalRef.current = window.setInterval(
+          () => setSeconds((prev) => prev + 1),
+          1000,
+        );
+        startPolling();
+      }
     } catch (error: unknown) {
       console.log(error);
     } finally {
@@ -98,33 +119,151 @@ export default function IndexPage() {
 
   useEffect(() => {
     fetchTimer();
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      stopPolling();
+    };
   }, []);
 
-  async function getTodos() {
+  async function updateTimer() {
     try {
-      const studyLogId = JSON.parse(localStorage.getItem("studyLogId") || "");
-
+      const accessToken = getAccessToken();
       if (!accessToken) throw new Error("로그인 필요");
 
       const response = await fetch(
-        `https://devtime.prokit.app/api/study-logs/${studyLogId}`,
+        `https://devtime.prokit.app/api/timers/${timerId}`,
         {
+          method: "PUT",
           headers: {
             Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
           },
+          body: JSON.stringify({
+            timerId,
+            splitTimes,
+          }),
         },
       );
 
-      if (!response.ok) throw new Error("할 일 불러오기 실패");
+      if (!response.ok) throw new Error("타이머 불러오기 실패");
+
       const data = await response.json();
-      console.log("현재 할일", data);
+      console.log("일시정지 타이머", data);
     } catch (error) {
       console.log(error);
     }
   }
 
-  if (isLoading) return <div>로딩 중...</div>;
+  const [seconds, setSeconds] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+  const intervalRef = useRef<number | null>(null);
 
+  const [splitTimes, setSplitTimes] = useState<SplitTime[]>([]);
+  const pollingRef = useRef<number | null>(null); //10분 주기
+
+  // yyyy-mm-dd key 생성
+  const getDateKey = (date = new Date()) => {
+    return date.toISOString().split("T")[0];
+  };
+
+  // splitTimes 누적
+  const addSplitTime = (date: Date, ms: number) => {
+    setSplitTimes((prev) => [
+      ...prev,
+      { date: date.toISOString(), timeSpent: ms },
+    ]);
+  };
+
+  // 날짜별로 시간 분리
+  const splitByDate = (start: Date, end: Date) => {
+    // 현재 계산 중인 시간 시작점
+    let current = new Date(start);
+
+    while (current < end) {
+      // 현재 날짜의 마지막 23:59:59.999
+      const endOfDay = new Date(current);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      // 오늘 날짜 끝과 종료 시점 중 작은 값
+      const chunkEnd = end < endOfDay ? end : endOfDay;
+      const diffMs = chunkEnd.getTime() - current.getTime();
+
+      // current 기준 날짜에 해당하는 시간 누적
+      addSplitTime(current, diffMs);
+
+      // 다음 날짜로 이동
+      current = new Date(chunkEnd.getTime() + 1);
+    }
+  };
+
+  // polling
+  const startPolling = () => {
+    if (!pollingRef.current) {
+      pollingRef.current = setInterval(() => updateTimer(), 10 * 60 * 1000);
+    }
+  };
+
+  const stopPolling = () => {
+    if (pollingRef.current) {
+      clearInterval(pollingRef.current);
+      pollingRef.current = null;
+    }
+  };
+
+  const startTimer = () => {
+    if (!isRunning) {
+      setIsRunning(true);
+      const now = new Date();
+      setStartTime(now);
+      intervalRef.current = window.setInterval(
+        () => setSeconds((prev) => prev + 1),
+        1000,
+      );
+      startPolling();
+    }
+  };
+
+  const pauseTimer = async () => {
+    if (isRunning && startTime) {
+      const now = new Date();
+      splitByDate(startTime, now);
+    }
+    setIsRunning(false);
+    setStartTime(null);
+    if (intervalRef.current) clearInterval(intervalRef.current!);
+
+    stopPolling();
+    await updateTimer();
+  };
+
+  const resetTimer = () => {
+    clearInterval(intervalRef.current!);
+    setIsRunning(false);
+    setSeconds(0);
+  };
+
+  const formatTime = (sec: number) => {
+    const hour = Math.floor(sec / 3600)
+      .toString()
+      .padStart(2, "0");
+    const minute = Math.floor((sec % 3600) / 60)
+      .toString()
+      .padStart(2, "0");
+    const s = (sec % 60).toString().padStart(2, "0");
+
+    return { hour, minute, s };
+  };
+
+  const { hour, minute, s } = formatTime(seconds);
+
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
+
+  if (isLoading) return <div>로딩 중...</div>;
   return (
     <div>
       {/* {showLoginModal&&<} */}
@@ -144,34 +283,29 @@ export default function IndexPage() {
       )}
 
       <div className="m-auto flex w-258 flex-col gap-20">
-        <div className="text-primary-blue flex justify-between gap-12">
-          <div className="border-primary-blue from-primary-blue/0 to-primary-blue/20 h-[300px] w-[260px] rounded-xl border bg-linear-to-br from-0% to-100% px-2">
-            <div className="digit-time">00</div>
-            <div className="py-9 text-center">HOURS</div>
-          </div>
-          <p>:</p>
-          <div className="border-primary-blue from-primary-blue/0 to-primary-blue/20 h-[300px] w-[260px] rounded-xl border bg-linear-to-br from-0% to-100% px-2">
-            <div className="digit-time">00</div>
-            <div className="py-9 text-center">MINUTES</div>
-          </div>
-          <p>:</p>
-          <div className="border-primary-blue from-primary-blue/0 to-primary-blue/20 h-[300px] w-[260px] rounded-xl border bg-linear-to-br from-0% to-100% px-2">
-            <div className="digit-time">00</div>
-            <div className="py-9 text-center">SECONDS</div>
-          </div>
-        </div>
+        <StudyTimer hour={hour} minute={minute} s={s} />
 
         <div className="relative flex items-center gap-[134px]">
           <div className="m-auto flex items-end justify-end gap-20">
             <img
-              onClick={() => setIsCreateTodosModalOpen(true)}
-              src={startIcon}
+              onClick={() => {
+                if (timerId) {
+                  startTimer();
+                } else {
+                  setIsCreateTodosModalOpen(true);
+                }
+              }}
+              src={isRunning ? enabledStartIcon : startIcon}
               alt="타이머 시작 버튼"
             />
-            <img src={enabledPauseIcon} alt="타이머 중지 버튼" />
             <img
-              onClick={deleteTimer}
-              src={enabledFinishIcon}
+              src={isRunning ? pauseIcon : enabledPauseIcon}
+              onClick={pauseTimer}
+              alt="타이머 중지 버튼"
+            />
+            <img
+              onClick={resetTimer}
+              src={seconds ? finishIcon : enabledFinishIcon}
               alt="타이머 종료 버튼"
             />
           </div>
@@ -191,6 +325,7 @@ export default function IndexPage() {
               </button>
               <button
                 title="초기화"
+                onClick={deleteTimer}
                 className="h-16 w-16 cursor-pointer rounded-4xl bg-white p-2"
               >
                 <img
@@ -204,8 +339,11 @@ export default function IndexPage() {
         </div>
       </div>
 
-      {isCreateTodosModalOpen && (
-        <TodosModal onClick={() => setIsCreateTodosModalOpen(false)} />
+      {!timerId && isCreateTodosModalOpen && (
+        <TodosModal
+          onClick={() => setIsCreateTodosModalOpen(false)}
+          onStart={() => startTimer()}
+        />
       )}
       {isUpdateTodosModalOpen && (
         <ManageTodos onClick={() => setIsUpdateTodosModalOpen(false)} />

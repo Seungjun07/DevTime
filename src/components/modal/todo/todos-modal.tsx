@@ -4,8 +4,10 @@ import { getAccessToken } from "../../../utils/token";
 
 export default function TodosModal({
   onClick: onClose,
+  onStart,
 }: {
   onClick: () => void;
+  onStart: () => void;
 }) {
   const [todayGoal, setTodayGoal] = useState("");
   const [todos, setTodos] = useState<string[]>([]);
@@ -96,6 +98,7 @@ export default function TodosModal({
         </div>
 
         <div className="flex justify-end gap-4">
+          <button onClick={onStart}>tt</button>
           <button
             className="text-primary-blue h-12 cursor-pointer rounded-sm bg-gray-50 px-4 py-3 text-[18px] leading-[22px] font-semibold"
             onClick={onClose}
@@ -104,7 +107,10 @@ export default function TodosModal({
           </button>
           <button
             disabled={isDisabled}
-            onClick={createTimer}
+            onClick={() => {
+              createTimer();
+              onStart();
+            }}
             className={`h-12 cursor-pointer rounded-sm px-4 py-3 text-[18px] leading-[22px] font-semibold ${isDisabled ? "disabled-button" : "bg-primary-blue/10 text-primary-blue"}`}
           >
             타이머 시작하기

@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+import { getAccessToken } from "../utils/token";
+
 const heatmapData = [
   { date: "2025-01-01", value: 1 },
   { date: "2025-01-02", value: 3 },
@@ -30,6 +33,7 @@ const generateYearHeatmap = (year, records) => {
 };
 
 export default function StudyHeatmap() {
+  const [data, setData] = useState();
   function getColor(value) {
     if (value <= 2) return "bg-[#b8caff]";
     if (value <= 4) return "bg-[#87a6ff]";
@@ -37,6 +41,30 @@ export default function StudyHeatmap() {
     if (value <= 8) return "bg-[#1e50e5]";
     return "bg-[#023e99]";
   }
+
+  async function getHeatMapData() {
+    try {
+      const accessToken = getAccessToken();
+      if (!accessToken) throw new Error("로그인 필요");
+
+      const response = await fetch("https://devtime.prokit.app/api/heatmap", {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("히트맵 불러오기 실패");
+      const data = await response.json();
+      console.log(data);
+      setData(data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    getHeatMapData();
+  }, []);
 
   const days = generateYearHeatmap(2025, heatmapData);
   const months = Array.from({ length: 12 }, (_, i) =>

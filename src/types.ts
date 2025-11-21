@@ -32,3 +32,13 @@ export interface MyProfile {
     techStacks: string[];
   };
 }
+
+export interface SplitTime {
+  date: string;
+  timeSpent: number;
+}
+
+export interface TimerPayLoad {
+  timerId: string;
+  splitTimes: SplitTime[];
+}
