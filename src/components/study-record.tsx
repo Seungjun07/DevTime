@@ -1,4 +1,7 @@
+import { useEffect, useState } from "react";
+import { getAccessToken } from "../utils/token";
 import trashIcon from "./../assets/trash.png";
+import { formatDate } from "../lib/date";
 
 const records = [
   {
@@ -68,6 +71,38 @@ const records = [
 ];
 
 export default function StudyRecord() {
+  const [studyLogs, setStudyLogs] = useState();
+  const [pagination, setPagination] = useState();
+
+  async function getStudyLogs() {
+    try {
+      const accessToken = getAccessToken();
+
+      if (!accessToken) throw new Error("로그인 필요");
+
+      const response = await fetch(
+        "https://devtime.prokit.app/api/study-logs",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      );
+
+      if (!response.ok) throw new Error("공부 기록 불러오기 실패");
+      const data = await response.json();
+      setStudyLogs(data.data.studyLogs);
+      setPagination(data.data.pagination);
+      console.log(data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    getStudyLogs();
+  }, []);
+
   return (
     <div className="flex flex-col rounded-[18px] bg-white px-6">
       <p className="py-6">학습 기록</p>
@@ -94,14 +129,19 @@ export default function StudyRecord() {
             </tr>
           </thead>
           <tbody>
-            {records.map((record, i) => (
-              <tr key={i} className="border-b">
-                <td className="py-6 pl-9">{record.date}</td>
-                <td>{record.goal}</td>
-                <td>{record.studyTime}</td>
-                <td>{record.successCount}</td>
-                <td>{record.failCount}</td>
-                <td>{record.achieved}</td>
+            {studyLogs?.map((log, i) => (
+              <tr
+                key={log.id}
+                className="border-b text-[16px] leading-5 font-medium text-[#394252]"
+              >
+                <td className="py-6 pl-9">{formatDate(log.date)}</td>
+                <td className="text-secondary-indigo font-semibold">
+                  {log.todayGoal}
+                </td>
+                <td>{log.studyTime}</td>
+                <td>{log.totalTasks}</td>
+                <td>{log.incompleteTasks}</td>
+                <td>{log.completionRate}</td>
                 <td>
                   <button className="flex cursor-pointer items-center justify-center">
                     <img
