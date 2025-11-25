@@ -48,7 +48,7 @@ export default function MyPage() {
           <p className="text-secondary-indigo text-[18px] leading-[22px] font-medium">
             tony_engineer
           </p>
-          {profile?.profile.goal ? (
+          {profile?.profile?.goal ? (
             <p className="text-secondary-indigo text-2xl leading-[30px] font-bold">
               {profile.profile.goal}
             </p>
@@ -72,7 +72,7 @@ export default function MyPage() {
             <p className="text-disabled-400 text-[14px] leading-[18px] font-semibold">
               개발 경력
             </p>
-            {profile?.profile.career ? (
+            {profile?.profile?.career ? (
               <p className="text-[18px] leading-[22px] font-semibold text-[#4b5563]">
                 {profile.profile.career}
               </p>
@@ -86,7 +86,7 @@ export default function MyPage() {
             <p className="text-disabled-400 text-[14px] leading-[18px] font-semibold">
               공부 목적
             </p>
-            {profile?.profile.purpose ? (
+            {profile?.profile?.purpose ? (
               <p className="text-[18px] leading-[22px] font-semibold text-[#4b5563]">
                 {profile.profile.purpose}
               </p>
@@ -100,7 +100,7 @@ export default function MyPage() {
             <p className="text-disabled-400 text-[14px] leading-[18px] font-semibold">
               개발 스택
             </p>
-            {profile?.profile.techStacks ? (
+            {profile?.profile?.techStacks ? (
               profile.profile.techStacks.map((stack) => (
                 <div key={stack} className="flex">
                   <div className="rounded-[5px] bg-[#F0F2F5] px-2 py-1 text-[16px] leading-5 font-medium text-[#717887]">

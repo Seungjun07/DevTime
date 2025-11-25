@@ -93,12 +93,11 @@ export default function TodosModal({
 
         <div className="scrollbar-hide flex h-115 flex-col gap-3 overflow-y-auto">
           {todos.map((todo, i) => (
-            <TodoItem key={i} todo={todo} />
+            <TodoItem key={i} content={todo} type="CREATE" />
           ))}
         </div>
 
         <div className="flex justify-end gap-4">
-          <button onClick={onStart}>tt</button>
           <button
             className="text-primary-blue h-12 cursor-pointer rounded-sm bg-gray-50 px-4 py-3 text-[18px] leading-[22px] font-semibold"
             onClick={onClose}

@@ -17,8 +17,6 @@ export default function GlobalLayout() {
           <div className="flex gap-9">
             <Link to={"/dashboard"}>대시보드</Link>
             <Link to={"/ranking"}>랭킹</Link>
-            <Link to={"/profile"}>프로필</Link>
-            <Link to={"/my-page"}>마이페이지 임시</Link>
           </div>
         </div>
 

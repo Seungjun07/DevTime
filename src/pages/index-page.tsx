@@ -9,19 +9,22 @@ import tagIcon from "./../assets/tag.png";
 import editIcon from "./../assets/edit.png";
 import trashIcon from "./../assets/trash.png";
 import TodoItem from "../components/todo-item";
-import { fetchWithAuth } from "../api/auth";
+import { fetchWithAuth, logout } from "../api/auth";
 import TodosModal from "../components/modal/todo/todos-modal";
-import { getAccessToken } from "../utils/token";
+import { deleteToken, getAccessToken } from "../utils/token";
 import { type SplitTime, type MyProfile } from "../types";
 import resetIcon from "./../assets/Reset.png";
 import todoIcon from "./../assets/TODO.png";
 import CreateTodos from "../components/modal/todo/create-todos";
 import ManageTodos from "../components/modal/todo/manage-todos";
 import StudyTimer from "../components/timer/study-timer";
+import SignInAlertModal from "../components/modal/sign-in-alert-modal";
+import StopTodosModal from "../components/modal/todo/stop-todos-modal";
 
 export default function IndexPage() {
   const [isCreateTodosModalOpen, setIsCreateTodosModalOpen] = useState(false);
   const [isUpdateTodosModalOpen, setIsUpdateTodosModalOpen] = useState(false);
+  const [isStopTodosModalOpen, setIsStopTodosModalOpen] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -33,21 +36,25 @@ export default function IndexPage() {
   const [startTime, setStartTime] = useState<Date | null>(null);
 
   async function deleteTimer() {
-    if (!accessToken) throw new Error("로그인 필요");
-    const data = await fetch(
-      `https://devtime.prokit.app/api/timers/${timerId}`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
+    try {
+      if (!accessToken) throw new Error("로그인 필요");
+      const response = await fetch(
+        `https://devtime.prokit.app/api/timers/${timerId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
         },
-      },
-    );
+      );
 
-    resetTimer();
-    localStorage.removeItem("timerId");
-    localStorage.removeItem("studyLogId");
-    console.log(data);
+      if (!response.ok) throw new Error("타이머 삭제 실패");
+      const data = response.json();
+      console.log(data);
+      resetTimer();
+    } catch (error) {
+      console.log(error);
+    }
   }
   const [profile, setProfile] = useState<MyProfile>();
   const accessToken = getAccessToken();
@@ -55,11 +62,26 @@ export default function IndexPage() {
     try {
       if (!accessToken) throw new Error("로그인 필요");
 
-      const response = await fetch("https://devtime.prokit.app/api/profile", {
+      let response = await fetch("https://devtime.prokit.app/api/profile", {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
+
+      if (response.status === 401) {
+        const tokenRefreshed = await refreshAccessToken();
+        if (tokenRefreshed) {
+          response = await fetch("https://devtime.prokit.app/api/profile", {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          });
+        } else {
+          deleteToken();
+          throw new Error("로그인 필요");
+        }
+      }
+
       if (!response.ok) throw new Error("프로필 불러오기 실패");
       const data = await response.json();
       setProfile(data);
@@ -71,6 +93,27 @@ export default function IndexPage() {
   useEffect(() => {
     getProfile();
   }, []);
+
+  async function refreshAccessToken() {
+    try {
+      const response = await fetch(
+        "https://devtime.prokit.app/api/auth/refresh",
+        {
+          method: "POST",
+          credentials: "include",
+        },
+      );
+
+      if (!response.ok) return false;
+
+      const data = await response.json();
+      localStorage.setItem("accessToken", data.accessToken);
+      return true;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  }
 
   async function fetchTimer() {
     setIsLoading(true);
@@ -86,7 +129,13 @@ export default function IndexPage() {
         },
       });
 
-      if (!response.ok) throw new Error("타이머 불러오기 실패");
+      if (!response.ok) {
+        if (response.status === 404) {
+          localStorage.removeItem("timerId");
+        }
+        throw new Error("타이머 불러오기 실패");
+      }
+
       const data = await response.json();
       console.log("현재 타이머", data);
       setTimer(data);
@@ -162,10 +211,10 @@ export default function IndexPage() {
   const [splitTimes, setSplitTimes] = useState<SplitTime[]>([]);
   const pollingRef = useRef<number | null>(null); //10분 주기
 
-  // yyyy-mm-dd key 생성
-  const getDateKey = (date = new Date()) => {
-    return date.toISOString().split("T")[0];
-  };
+  // // yyyy-mm-dd key 생성
+  // const getDateKey = (date = new Date()) => {
+  //   return date.toISOString().split("T")[0];
+  // };
 
   // splitTimes 누적
   const addSplitTime = (date: Date, ms: number) => {
@@ -241,6 +290,8 @@ export default function IndexPage() {
     clearInterval(intervalRef.current!);
     setIsRunning(false);
     setSeconds(0);
+    localStorage.removeItem("timerId");
+    localStorage.removeItem("studyLogId");
   };
 
   const formatTime = (sec: number) => {
@@ -266,7 +317,9 @@ export default function IndexPage() {
   if (isLoading) return <div>로딩 중...</div>;
   return (
     <div>
-      {/* {showLoginModal&&<} */}
+      {/* {!accessToken && (
+        <SignInAlertModal handleConfirm={() => setShowLoginModal(false)} />
+      )} */}
       {accessToken ? (
         <h1 className="pb-20 text-center text-7xl">
           {profile?.profile?.goal
@@ -304,7 +357,11 @@ export default function IndexPage() {
               alt="타이머 중지 버튼"
             />
             <img
-              onClick={resetTimer}
+              onClick={() => {
+                setIsStopTodosModalOpen(true);
+
+                // resetTimer();
+              }}
               src={seconds ? finishIcon : enabledFinishIcon}
               alt="타이머 종료 버튼"
             />
@@ -325,7 +382,9 @@ export default function IndexPage() {
               </button>
               <button
                 title="초기화"
-                onClick={deleteTimer}
+                onClick={() => {
+                  deleteTimer();
+                }}
                 className="h-16 w-16 cursor-pointer rounded-4xl bg-white p-2"
               >
                 <img
@@ -347,6 +406,14 @@ export default function IndexPage() {
       )}
       {isUpdateTodosModalOpen && (
         <ManageTodos onClick={() => setIsUpdateTodosModalOpen(false)} />
+      )}
+
+      {isStopTodosModalOpen && (
+        <StopTodosModal
+          onClick={() => setIsStopTodosModalOpen(false)}
+          splitTimes={splitTimes}
+          deleteTimer={resetTimer}
+        />
       )}
       {/* {isOpen && <CreateTodos onClick={() => setIsOpen(false)} />} */}
     </div>

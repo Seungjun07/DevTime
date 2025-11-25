@@ -99,7 +99,7 @@ export default function SignUpPage() {
 
       const data = await response.json();
 
-      if (data) navigate("/", { replace: true });
+      if (data) navigate("/sign-in", { replace: true });
     } catch (error) {
       alert("서버 오류 발생");
     }
