@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import StudyHeatmap from "../components/study-heatmap";
 import StudyRecord from "../components/study-record";
 import { getAccessToken } from "../utils/token";
+import WeekdayStudyAverage from "../components/weekday-study-average";
 
+type WeekDay = { [key: string]: number };
 export default function DashboardPage() {
   const [myStudyInfo, setMyStudyInfo] = useState();
   async function getMyStudyInfo() {
@@ -27,6 +29,35 @@ export default function DashboardPage() {
   useEffect(() => {
     getMyStudyInfo();
   }, []);
+
+  function formatTime(sec: number) {
+    const time = Math.floor(sec / 1000);
+
+    const hours = Math.floor(time / 3600)
+      .toString()
+      .padStart(2, "0");
+    const minutes = Math.floor((time % 3600) / 60)
+      .toString()
+      .padStart(2, "0");
+    const seconds = Math.floor(time % 60)
+      .toString()
+      .padStart(2, "0");
+
+    return { hours, minutes, seconds };
+  }
+
+  const { hours: totalHours, minutes: totalMinutes } = formatTime(
+    myStudyInfo?.totalStudyTime,
+  );
+  const { hours: averageHours, minutes: averageMinutes } = formatTime(
+    myStudyInfo?.averageDailyStudyTime,
+  );
+
+  const weekdayStudyTime = Object.entries(
+    myStudyInfo?.weekdayStudyTime || {},
+  ).map(([day, value]) => ({ day, value }));
+
+  console.log(weekdayStudyTime);
   return (
     <div className="flex flex-col gap-4">
       <div className="flex gap-4">
@@ -36,25 +67,54 @@ export default function DashboardPage() {
               누적 공부 시간
             </p>
             <p className="text-secondary-indigo text-end text-4xl leading-[46px] font-bold">
+              {totalHours}
               <span className="text-[16px] leading-5 font-medium">
                 &nbsp;시간&nbsp;
               </span>
-              32
+              {totalMinutes}
               <span className="text-[16px] leading-5 font-medium">
                 &nbsp;분
               </span>
             </p>
           </div>
-          <div className="w-60 rounded-[18px] bg-white p-6">2</div>
-          <div className="w-60 rounded-[18px] bg-white p-6">3</div>
-          <div className="w-60 rounded-[18px] bg-white p-6">4</div>
+          <div className="flex w-60 flex-col gap-2 rounded-[18px] bg-white p-6">
+            <p className="text-disabled-400 text-[18px] leading-[22px] font-semibold">
+              누적 공부 일수
+            </p>
+            <p className="text-secondary-indigo text-end text-4xl leading-[46px] font-bold">
+              {myStudyInfo?.consecutiveDays}
+              <span className="text-[16px] leading-5 font-medium">
+                &nbsp;일째
+              </span>
+            </p>
+          </div>
+          <div className="flex w-60 flex-col gap-2 rounded-[18px] bg-white p-6">
+            <p className="text-disabled-400 text-[18px] leading-[22px] font-semibold">
+              하루 평균 공부 시간
+            </p>
+            <p className="text-secondary-indigo text-end text-4xl leading-[46px] font-bold">
+              {averageHours}
+              <span className="text-[16px] leading-5 font-medium">
+                &nbsp;시간&nbsp;
+              </span>
+              {averageMinutes}
+              <span className="text-[16px] leading-5 font-medium">
+                &nbsp;분
+              </span>
+            </p>
+          </div>
+          <div className="flex w-60 flex-col gap-2 rounded-[18px] bg-white p-6">
+            <p className="text-disabled-400 text-[18px] leading-[22px] font-semibold">
+              목표 달성률
+            </p>
+            <p className="text-secondary-indigo text-end text-4xl leading-[46px] font-bold">
+              {myStudyInfo?.taskCompletionRate}
+              <span className="text-[16px] leading-5 font-medium">&nbsp;%</span>
+            </p>
+          </div>
         </div>
 
-        <div className="bg-primary-blue h-66 flex-1 rounded-[18px]">
-          <p className="p-6 text-lg leading-[22px] font-semibold text-white">
-            요일별 공부 시간 평균
-          </p>
-        </div>
+        <WeekdayStudyAverage weekdayStudyTime={weekdayStudyTime} />
       </div>
 
       {/* 학습 잔디 */}

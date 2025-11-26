@@ -3,8 +3,6 @@ import logo from "./../assets/logo.svg";
 import { getAccessToken } from "../utils/token";
 import Profile from "../components/profile";
 export default function GlobalLayout() {
-  const navigate = useNavigate();
-
   const accessToken = getAccessToken();
 
   return (

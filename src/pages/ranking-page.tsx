@@ -8,7 +8,7 @@ export default function RankingPage() {
   async function fetchRanking() {
     try {
       const data = await fetchWithAuth(
-        `https://devtime.prokit.app/api/rankings`,
+        `https://devtime.prokit.app/api/rankings?sortBy=total`,
         "GET",
       );
       console.log(data);
