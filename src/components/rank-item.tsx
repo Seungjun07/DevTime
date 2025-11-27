@@ -2,8 +2,8 @@ import type { RankingItem } from "../types";
 import profileImg from "./../assets/Profile.png";
 
 export default function RankItem(props: RankingItem) {
-  const totalStudyTime = (props.totalStudyTime / 3600).toFixed(0);
-  const averageStudyTime = (props.averageStudyTime / 3600).toFixed(1);
+  const totalStudyTime = (props.totalStudyTime / 3600 / 1000).toFixed(0);
+  const averageStudyTime = (props.averageStudyTime / 3600 / 1000).toFixed(1);
   return (
     <div className="flex gap-9 rounded-xl bg-white px-6 py-3">
       <div className="flex h-[126px] flex-col items-start gap-4">

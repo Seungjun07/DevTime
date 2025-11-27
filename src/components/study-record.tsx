@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getAccessToken } from "../utils/token";
 import trashIcon from "./../assets/trash.png";
 import { formatDate } from "../lib/date";
+import { formatTime } from "../lib/time";
 
 const records = [
   {
@@ -129,30 +130,35 @@ export default function StudyRecord() {
             </tr>
           </thead>
           <tbody>
-            {studyLogs?.map((log, i) => (
-              <tr
-                key={log.id}
-                className="border-b text-[16px] leading-5 font-medium text-[#394252]"
-              >
-                <td className="py-6 pl-9">{formatDate(log.date)}</td>
-                <td className="text-secondary-indigo font-semibold">
-                  {log.todayGoal}
-                </td>
-                <td>{log.studyTime}</td>
-                <td>{log.totalTasks}</td>
-                <td>{log.incompleteTasks}</td>
-                <td>{log.completionRate}</td>
-                <td>
-                  <button className="flex cursor-pointer items-center justify-center">
-                    <img
-                      className="h-6 w-6 object-cover"
-                      src={trashIcon}
-                      alt="쓰레기통 아이콘"
-                    />
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {studyLogs?.map((log, i) => {
+              const { hours, minutes } = formatTime(log.studyTime);
+              return (
+                <tr
+                  key={log.id}
+                  className="border-b text-[16px] leading-5 font-medium text-[#394252]"
+                >
+                  <td className="py-6 pl-9">{formatDate(log.date)}</td>
+                  <td className="text-secondary-indigo font-semibold">
+                    {log.todayGoal}
+                  </td>
+                  <td>
+                    {hours}시간 {minutes}분
+                  </td>
+                  <td>{log.totalTasks}</td>
+                  <td>{log.incompleteTasks}</td>
+                  <td>{log.completionRate}</td>
+                  <td>
+                    <button className="flex cursor-pointer items-center justify-center">
+                      <img
+                        className="h-6 w-6 object-cover"
+                        src={trashIcon}
+                        alt="쓰레기통 아이콘"
+                      />
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
