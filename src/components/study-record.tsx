@@ -3,77 +3,20 @@ import { getAccessToken } from "../utils/token";
 import trashIcon from "./../assets/trash.png";
 import { formatDate } from "../lib/date";
 import { formatTime } from "../lib/time";
-
-const records = [
-  {
-    date: "2025.09.30",
-    goal: "공부 시간 10시간 채우자 💪",
-    studyTime: "10시간 1분",
-    successCount: 8,
-    failCount: 2,
-    achieved: "75%",
-  },
-  {
-    date: "2025.09.29",
-    goal: "불타올라 정보 코드 뜯어내기",
-    studyTime: "23시간 50분",
-    successCount: 10,
-    failCount: 2,
-    achieved: "80%",
-  },
-  {
-    date: "2025.09.30",
-    goal: "공부 시간 10시간 채우자 💪",
-    studyTime: "10시간 1분",
-    successCount: 8,
-    failCount: 2,
-    achieved: "75%",
-  },
-  {
-    date: "2025.09.29",
-    goal: "불타올라 정보 코드 뜯어내기",
-    studyTime: "23시간 50분",
-    successCount: 10,
-    failCount: 2,
-    achieved: "80%",
-  },
-  {
-    date: "2025.09.30",
-    goal: "공부 시간 10시간 채우자 💪",
-    studyTime: "10시간 1분",
-    successCount: 8,
-    failCount: 2,
-    achieved: "75%",
-  },
-  {
-    date: "2025.09.29",
-    goal: "불타올라 정보 코드 뜯어내기",
-    studyTime: "23시간 50분",
-    successCount: 10,
-    failCount: 2,
-    achieved: "80%",
-  },
-  {
-    date: "2025.09.30",
-    goal: "공부 시간 10시간 채우자 💪",
-    studyTime: "10시간 1분",
-    successCount: 8,
-    failCount: 2,
-    achieved: "75%",
-  },
-  {
-    date: "2025.09.29",
-    goal: "불타올라 정보 코드 뜯어내기",
-    studyTime: "23시간 50분",
-    successCount: 10,
-    failCount: 2,
-    achieved: "80%",
-  },
-];
+import doubleLeftIcon from "./../assets/2chevron-left.png";
+import leftIcon from "./../assets/chevron-left.png";
+import doubleRightIcon from "./../assets/2chevron-right.png";
+import rightIcon from "./../assets/chevron-right.png";
 
 export default function StudyRecord() {
-  const [studyLogs, setStudyLogs] = useState();
   const [pagination, setPagination] = useState();
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentItems, setCurrentItems] = useState();
+  const [pageCount, setPageCount] = useState(1);
+  const itemsPerpage = 10;
+
+  const pages = Array.from({ length: pageCount }, (_, i) => i + 1) || 1;
 
   async function getStudyLogs() {
     try {
@@ -82,7 +25,7 @@ export default function StudyRecord() {
       if (!accessToken) throw new Error("로그인 필요");
 
       const response = await fetch(
-        "https://devtime.prokit.app/api/study-logs",
+        `https://devtime.prokit.app/api/study-logs?page=${currentPage}&limit=${itemsPerpage}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -92,9 +35,9 @@ export default function StudyRecord() {
 
       if (!response.ok) throw new Error("공부 기록 불러오기 실패");
       const data = await response.json();
-      setStudyLogs(data.data.studyLogs);
+      setCurrentItems(data.data.studyLogs);
+      setPageCount(data.data.pagination.totalPages);
       setPagination(data.data.pagination);
-      console.log(data);
     } catch (error) {
       console.log(error);
     }
@@ -102,11 +45,13 @@ export default function StudyRecord() {
 
   useEffect(() => {
     getStudyLogs();
-  }, []);
+  }, [currentPage]);
 
   return (
-    <div className="flex flex-col rounded-[18px] bg-white px-6">
-      <p className="py-6">학습 기록</p>
+    <div className="flex flex-col gap-6 rounded-[18px] bg-white p-6">
+      <h2 className="text-disabled-400 text-lg leading-[22px] font-semibold">
+        학습 기록
+      </h2>
       <div className="overflow-hidden rounded-t-xl">
         <table className="w-full">
           <colgroup>
@@ -130,7 +75,7 @@ export default function StudyRecord() {
             </tr>
           </thead>
           <tbody>
-            {studyLogs?.map((log, i) => {
+            {currentItems?.map((log, i) => {
               const { hours, minutes } = formatTime(log.studyTime);
               return (
                 <tr
@@ -165,32 +110,56 @@ export default function StudyRecord() {
 
       {/* pagination */}
       <div className="flex justify-center gap-3 py-9">
-        <button className="flex h-6 w-6 items-center justify-center rounded-[5px] bg-[#f0f2f5] py-0.5">
-          ㅇ
+        <button
+          disabled={!pagination?.hasPrev}
+          className="disabled:bg-disabled-200 disabled:text-disabled-300 flex h-6 w-6 cursor-pointer items-center justify-center rounded-[5px] bg-[#f0f2f5] py-0.5"
+        >
+          <img
+            src={doubleLeftIcon}
+            className={`${!pagination?.hasPrev && "brightness-150 invert"}`}
+            alt="처음 페이지로"
+          />
         </button>
-        <button className="flex h-6 w-6 items-center justify-center rounded-[5px] bg-[#f0f2f5] py-0.5">
-          ㅈ
+        <button
+          disabled={!pagination?.hasPrev}
+          className="disabled:bg-disabled-200 disabled:text-disabled-300 flex h-6 w-6 cursor-pointer items-center justify-center rounded-[5px] bg-[#f0f2f5] py-0.5"
+        >
+          <img
+            src={leftIcon}
+            className={`${!pagination?.hasPrev && "brightness-150 invert"}`}
+            alt="이전 페이지로"
+          />
         </button>
-        <button className="bg-primary-blue flex h-6 w-6 items-center justify-center rounded-[5px] py-0.5 text-white">
-          1
+        {pages.map((page) => (
+          <button
+            key={page}
+            onClick={() => setCurrentPage(page)}
+            disabled={page === currentPage}
+            className={`${page === currentPage ? "bg-primary-blue font-bold text-white" : "bg-[#f0f2f5] font-medium text-gray-600"} flex h-6 w-6 cursor-pointer items-center justify-center rounded-[5px] py-0.5 text-[16px] leading-5`}
+          >
+            {page}
+          </button>
+        ))}
+
+        <button
+          disabled={!pagination?.hasNext}
+          className="disabled:bg-disabled-200 disabled:text-disabled-300 flex h-6 w-6 cursor-pointer items-center justify-center rounded-[5px] bg-[#f0f2f5] py-0.5"
+        >
+          <img
+            src={rightIcon}
+            className={`${!pagination?.hasNext && "brightness-150 invert"}`}
+            alt="다음 페이지로"
+          />
         </button>
-        <button className="flex h-6 w-6 items-center justify-center rounded-[5px] bg-[#f0f2f5] py-0.5">
-          2
-        </button>
-        <button className="flex h-6 w-6 items-center justify-center rounded-[5px] bg-[#f0f2f5] py-0.5">
-          3
-        </button>
-        <button className="flex h-6 w-6 items-center justify-center rounded-[5px] bg-[#f0f2f5] py-0.5">
-          4
-        </button>
-        <button className="flex h-6 w-6 items-center justify-center rounded-[5px] bg-[#f0f2f5] py-0.5">
-          5
-        </button>
-        <button className="flex h-6 w-6 items-center justify-center rounded-[5px] bg-[#f0f2f5] py-0.5">
-          ㄷ
-        </button>
-        <button className="flex h-6 w-6 items-center justify-center rounded-[5px] bg-[#f0f2f5] py-0.5">
-          ㅇ
+        <button
+          disabled={!pagination?.hasNext}
+          className="disabled:bg-disabled-200 disabled:text-disabled-300 flex h-6 w-6 cursor-pointer items-center justify-center rounded-[5px] bg-[#f0f2f5] py-0.5"
+        >
+          <img
+            src={doubleRightIcon}
+            className={`${!pagination?.hasNext && "brightness-150 invert"}`}
+            alt="마지막 페이지로"
+          />
         </button>
       </div>
     </div>

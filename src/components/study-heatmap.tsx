@@ -1,46 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import HeatMap from "@uiw/react-heat-map";
 import { getAccessToken } from "../utils/token";
 
-const heatmapData = [
-  { date: "2025-01-01", value: 1 },
-  { date: "2025-01-02", value: 3 },
-  { date: "2025-01-03", value: 0 },
-];
-
-const generateYearHeatmap = (year, records) => {
-  const start = new Date(year, 0, 1);
-  const end = new Date(year, 11, 31);
-  const dayMs = 24 * 60 * 60 * 1000;
-
-  const recordMap = {};
-  records.forEach((r) => (recordMap[r.date] = r.minutes));
-
-  const days = [];
-  for (let d = start; d <= end; d = new Date(d.getTime() + dayMs)) {
-    const dateString = d.toISOString().slice(0, 10); // YYYY-MM-DD
-    const weekday = d.getDay(); // 0~6
-    const month = d.getMonth(); // 0~11
-
-    days.push({
-      date: dateString,
-      month,
-      weekday,
-      minutes: recordMap[dateString] || 0,
-    });
-  }
-
-  return days;
-};
-
 export default function StudyHeatmap() {
-  const [data, setData] = useState();
-  function getColor(value) {
-    if (value <= 2) return "bg-[#b8caff]";
-    if (value <= 4) return "bg-[#87a6ff]";
-    if (value <= 6) return "bg-[#4c79ff]";
-    if (value <= 8) return "bg-[#1e50e5]";
-    return "bg-[#023e99]";
-  }
+  const [heatmapData, setHeatmapData] = useState([]);
+
+  const { startDate, endDate } = useMemo(() => {
+    const end = new Date();
+    const start = new Date(end);
+    start.setFullYear(end.getFullYear() - 1);
+    return { startDate: start, endDate: end };
+  }, []);
+
+  // 히트맵 높이 계산 (7일 * (셀 크기 + 간격) + 월 라벨 공간)
+  const heatmapHeight = 7 * (16 + 4) + 30;
 
   async function getHeatMapData() {
     try {
@@ -55,8 +28,13 @@ export default function StudyHeatmap() {
 
       if (!response.ok) throw new Error("히트맵 불러오기 실패");
       const data = await response.json();
-      console.log(data);
-      setData(data);
+
+      const formattedData = data.heatmap.map((item) => ({
+        date: item.date,
+        count: item.colorLevel,
+      }));
+
+      setHeatmapData(formattedData);
     } catch (error) {
       console.log(error);
     }
@@ -66,61 +44,54 @@ export default function StudyHeatmap() {
     getHeatMapData();
   }, []);
 
-  const days = generateYearHeatmap(2025, heatmapData);
-  const months = Array.from({ length: 12 }, (_, i) =>
-    days.filter((d) => d.month === i),
-  );
-
-  const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
-
-  // 시간 포맷
-  const formatMinutes = (m) => {
-    const h = Math.floor(m / 60);
-    const min = m % 60;
-    return `${h}시간 ${min}분`;
-  };
   return (
-    <div className="flex flex-col rounded-[18px] bg-white p-6">
-      <p>공부 시간 바다</p>
-      <div className="flex gap-4">
-        {/* 요일 텍스트 */}
-        <div className="mt-[20px] flex flex-col gap-[6px]">
-          {weekdays.map((w) => (
-            <div key={w} className="text-xs text-gray-400">
-              {w}
-            </div>
-          ))}
-        </div>
+    <div className="flex flex-col gap-6 rounded-[18px] bg-white p-6">
+      <h2 className="text-disabled-400 text-lg leading-[22px] font-semibold">
+        공부 시간 바다
+      </h2>
 
-        {/* 각 월 렌더 */}
-        <div className="flex">
-          {months.map((monthData, monthI) => (
-            <div key={monthI} className="flex flex-col items-center">
-              {/* 월 표시 */}
-              <p className="mb-2 text-sm">{monthI + 1}월</p>
-
-              {/* 히트맵 칸 */}
-              <div
-                className="grid gap-[4px]"
-                style={{
-                  gridTemplateRows: "repeat(7, 1fr)",
-                  gridAutoFlow: "column", // 핵심 🔥 날짜가 세로로 채워지고 다음 열로 넘어감
-                }}
-              >
-                {monthData.map((day, index) => (
-                  <div
-                    key={index}
-                    className={`h-4 w-4 rounded-md transition ${getColor(
-                      day.minutes,
-                    )}`}
-                    title={`${day.date} / ${formatMinutes(day.minutes)}`}
-                  ></div>
-                ))}
-              </div>
-            </div>
-          ))}
+      <div className="scrollbar-hide overflow-x-auto">
+        <div className="w-full">
+          <HeatMap
+            value={heatmapData}
+            startDate={startDate}
+            endDate={endDate}
+            width={1110}
+            height={heatmapHeight}
+            rectSize={16}
+            space={4}
+            monthLabels={[
+              "1월",
+              "2월",
+              "3월",
+              "4월",
+              "5월",
+              "6월",
+              "7월",
+              "8월",
+              "9월",
+              "10월",
+              "11월",
+              "12월",
+            ]}
+            weekLabels={["일", "월", "화", "수", "목", "금", "토"]}
+            panelColors={{
+              // 0: "#eee",
+              1: "#b8caff",
+              2: "#87a6ff",
+              3: "#4c79ff",
+              4: "#1e50e5",
+              5: "#023e99",
+            }}
+            legendRender={() => null}
+            rectRender={(props, data) => {
+              return <rect {...props} rx="3" />;
+            }}
+          />
         </div>
       </div>
+
+      {/* 범례 */}
       <div className="flex items-center gap-2">
         <p className="py-2 text-[12px] leading-4 font-semibold text-[#b8caff]">
           Shallow

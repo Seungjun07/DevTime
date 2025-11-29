@@ -4,7 +4,6 @@ import StudyRecord from "../components/study-record";
 import { getAccessToken } from "../utils/token";
 import WeekdayStudyAverage from "../components/weekday-study-average";
 
-type WeekDay = { [key: string]: number };
 export default function DashboardPage() {
   const [myStudyInfo, setMyStudyInfo] = useState();
   async function getMyStudyInfo() {
@@ -19,7 +18,6 @@ export default function DashboardPage() {
       });
       if (!response.ok) throw new Error("정보 불러오기 실패");
       const data = await response.json();
-      console.log(data);
       setMyStudyInfo(data);
     } catch (error) {
       console.log(error);
@@ -57,7 +55,6 @@ export default function DashboardPage() {
     myStudyInfo?.weekdayStudyTime || {},
   ).map(([day, value]) => ({ day, value }));
 
-  console.log(weekdayStudyTime);
   return (
     <div className="flex flex-col gap-4">
       <div className="flex gap-4">
