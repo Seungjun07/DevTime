@@ -2,30 +2,62 @@ import tagIcon from "./../assets/tag.png";
 import editIcon from "./../assets/edit.png";
 import trashIcon from "./../assets/trash.png";
 import checkIcon from "./../assets/check.png";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type EventHandler,
+} from "react";
+
+type TodosModalType = "CREATE" | "EDIT" | "FINISH" | "UPDATE";
 
 export default function TodoItem({
-  content,
   id,
+  content,
   isCompleted = false,
+  onChange,
+  onRemove,
   onToggle,
   type,
+  isEditMode,
 }: {
-  content: string;
   id: string;
+  content: string;
   isCompleted?: boolean;
+  onChange: (id: string, content: string) => void;
+  onRemove: (id: string) => void;
   onToggle: (id: string) => void;
-  type: string;
+  type: TodosModalType;
+  isEditMode: boolean;
 }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isEditing) {
+      inputRef.current?.focus();
+    }
+  }, [isEditing]);
   return (
     <div
       className={`${isCompleted ? "bg-disabled-400" : "bg-primary-blue"} flex h-18 w-142 cursor-pointer items-center gap-4 rounded-md p-6 shadow-[0px_8px_8px_0px_rgba(0,0,0,0.05)]`}
-      onClick={() => onToggle(id)}
+      // onClick={() => onToggle(id)}
     >
       <img src={tagIcon} alt="html에 tag의 이미지" />
 
-      <p className="flex-1 text-white">{content}</p>
+      {isEditing ? (
+        <input
+          ref={inputRef}
+          className="flex-1 text-white outline-none"
+          value={content}
+          onChange={(e) => onChange(id, e.target.value)}
+        />
+      ) : (
+        <p className="flex-1 text-white">{content}</p>
+      )}
 
-      {type === "MANAGE" ? (
+      {(type === "UPDATE" || type === "FINISH") && !isEditMode ? (
         <label className="flex cursor-pointer items-center">
           <input
             type="checkbox"
@@ -47,19 +79,27 @@ export default function TodoItem({
         </label>
       ) : (
         <>
-          <button>
-            <img
-              className="cursor-pointer brightness-0 invert"
-              src={editIcon}
-            />
-          </button>
+          {isEditing ? (
+            <button onClick={() => setIsEditing(false)}>
+              <img className="h-6 w-6 cursor-pointer" src={checkIcon} />
+            </button>
+          ) : (
+            <>
+              <button onClick={() => setIsEditing(true)}>
+                <img
+                  className="cursor-pointer brightness-0 invert"
+                  src={editIcon}
+                />
+              </button>
 
-          <button>
-            <img
-              className="cursor-pointer brightness-0 invert"
-              src={trashIcon}
-            />
-          </button>
+              <button onClick={() => onRemove(id)}>
+                <img
+                  className="cursor-pointer brightness-0 invert"
+                  src={trashIcon}
+                />
+              </button>
+            </>
+          )}
         </>
       )}
     </div>

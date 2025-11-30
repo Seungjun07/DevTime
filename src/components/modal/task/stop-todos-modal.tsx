@@ -1,53 +1,36 @@
 import { useEffect, useState } from "react";
-import TodoItem from "../../todo-item";
-import editIcon from "./../../../assets/edit.png";
 import { getAccessToken } from "../../../utils/token";
-import { type Task, type SplitTime } from "../../../types";
+import { type SplitTime, type TaskModalType } from "../../../types";
+import { fetchTasksOnServer } from "../../../api/todos";
+import useTasks from "../../../hooks/use-tasks";
+import TaskList from "../../task/task-list";
 
 export default function StopTodosModal({
-  onClick: onClose,
+  onClose,
   splitTimes,
   deleteTimer,
+  type,
 }: {
-  onClick: () => void;
+  onClose: () => void;
   splitTimes: SplitTime[];
   deleteTimer: () => void;
+  type: TaskModalType;
 }) {
-  const [todos, setTodos] = useState<string[]>([]);
-  const [todo, setTodo] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [tasks, setTasks] = useState<Task[]>();
   const [studyReview, setStudyReview] = useState("");
 
   const isDisabled = studyReview.length < 15;
 
-  function handleAddTodo() {
-    if (todo.trim() === "") return;
-
-    setTodos([...todos, todo]);
-    setTodo("");
-  }
+  const { tasks, setTasks, addTask, updateTask, removeTask, toggleTask } =
+    useTasks();
 
   const studyLogId = JSON.parse(localStorage.getItem("studyLogId") || "");
   const timerId = JSON.parse(localStorage.getItem("timerId") || "");
   const accessToken = getAccessToken();
+
   async function getTodos() {
     try {
-      if (!accessToken) throw new Error("로그인 필요");
-
-      const response = await fetch(
-        `https://devtime.prokit.app/api/study-logs/${studyLogId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
-      );
-
-      if (!response.ok) throw new Error("할 일 불러오기 실패");
-      const data = await response.json();
-      setTasks(data.data);
-      console.log("현재 할일", data);
+      const data = await fetchTasksOnServer(studyLogId);
+      setTasks(data);
     } catch (error) {
       console.log(error);
     }
@@ -55,7 +38,6 @@ export default function StopTodosModal({
 
   useEffect(() => {
     getTodos();
-    console.log(tasks);
   }, []);
 
   async function stopTimer() {
@@ -74,7 +56,7 @@ export default function StopTodosModal({
             timerId,
             splitTimes,
             review: studyReview,
-            tasks: tasks.tasks,
+            tasks: tasks,
           }),
         },
       );
@@ -101,43 +83,14 @@ export default function StopTodosModal({
             완료한 일을 체크하고, 오늘의 학습 회고를 작성해 주세요.
           </p>
         </div>
-
-        <div className="w-142">
-          <div className="relative">
-            <input
-              id="todo"
-              maxLength={30}
-              value={todo}
-              className="placeholder:text-disabled-300 h-14 w-full rounded-lg bg-[#f0f2f5] px-6 py-4 outline-none placeholder:text-[16px] placeholder:leading-5 placeholder:font-medium"
-              onChange={(e) => setTodo(e.target.value)}
-              placeholder="할 일을 추가해 주세요."
-            />
-            <button
-              onClick={handleAddTodo}
-              disabled={todo === ""}
-              className={`${todo ? "text-primary-blue" : "text-disabled-400"} absolute top-[18px] right-6 bottom-[18px] cursor-pointer text-[16px] leading-5 font-bold`}
-            >
-              추가
-            </button>
-          </div>
-        </div>
-
-        <div className="scrollbar-hide flex h-115 flex-col gap-3 overflow-y-auto">
-          <div className="mb-3 flex w-142 justify-between">
-            <p className="text-xl leading-6 font-bold text-[#394252]">
-              할 일 목록
-            </p>
-            <button className="flex cursor-pointer items-center gap-2">
-              <img src={editIcon} alt="편집 아이콘" className="h-6 w-6" />
-              <p className="text-sm leading-[18px] font-medium text-[#4b5563]">
-                할 일 수정
-              </p>
-            </button>
-          </div>
-          {tasks?.tasks.map((task, i) => (
-            <TodoItem key={task.id} {...task} type="MANAGE" />
-          ))}
-        </div>
+        <TaskList
+          tasks={tasks}
+          addTask={addTask}
+          updateTask={updateTask}
+          removeTask={removeTask}
+          toggleTask={toggleTask}
+          type={type}
+        />
 
         <div className="flex flex-col gap-2">
           <label

@@ -47,6 +47,10 @@ export default function StudyRecord() {
     getStudyLogs();
   }, [currentPage]);
 
+  function removeRecord(id: string) {
+    setCurrentItems((prev) => prev.filter((item) => item.id !== id));
+  }
+
   return (
     <div className="flex flex-col gap-6 rounded-[18px] bg-white p-6">
       <h2 className="text-disabled-400 text-lg leading-[22px] font-semibold">
@@ -93,7 +97,10 @@ export default function StudyRecord() {
                   <td>{log.incompleteTasks}</td>
                   <td>{log.completionRate}</td>
                   <td>
-                    <button className="flex cursor-pointer items-center justify-center">
+                    <button
+                      onClick={() => removeRecord(log.id)}
+                      className="flex cursor-pointer items-center justify-center"
+                    >
                       <img
                         className="h-6 w-6 object-cover"
                         src={trashIcon}

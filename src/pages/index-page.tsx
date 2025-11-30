@@ -5,21 +5,15 @@ import enabledPauseIcon from "./../assets/Pause-enabled.png";
 import finishIcon from "./../assets/Finish.png";
 import enabledFinishIcon from "./../assets/Finish-enabled.png";
 import { useEffect, useRef, useState } from "react";
-import tagIcon from "./../assets/tag.png";
-import editIcon from "./../assets/edit.png";
-import trashIcon from "./../assets/trash.png";
-import TodoItem from "../components/todo-item";
-import { fetchWithAuth, logout } from "../api/auth";
-import TodosModal from "../components/modal/todo/todos-modal";
 import { deleteToken, getAccessToken } from "../utils/token";
 import { type SplitTime, type MyProfile } from "../types";
 import resetIcon from "./../assets/Reset.png";
 import todoIcon from "./../assets/TODO.png";
-import CreateTodos from "../components/modal/todo/create-todos";
-import ManageTodos from "../components/modal/todo/manage-todos";
+import ManageTodos from "../components/modal/task/manage-todos";
 import StudyTimer from "../components/timer/study-timer";
-import SignInAlertModal from "../components/modal/sign-in-alert-modal";
-import StopTodosModal from "../components/modal/todo/stop-todos-modal";
+import StopTodosModal from "../components/modal/task/stop-todos-modal";
+import TaskModalLayout from "../components/modal/task/task-modal-layout";
+import CreateTasks from "../components/modal/task/create-tasks";
 
 export default function IndexPage() {
   const [isCreateTodosModalOpen, setIsCreateTodosModalOpen] = useState(false);
@@ -399,21 +393,32 @@ export default function IndexPage() {
       </div>
 
       {!timerId && isCreateTodosModalOpen && (
-        <TodosModal
-          onClick={() => setIsCreateTodosModalOpen(false)}
-          onStart={() => startTimer()}
-        />
+        <TaskModalLayout>
+          <CreateTasks
+            onClose={() => setIsCreateTodosModalOpen(false)}
+            onStart={() => startTimer()}
+            type="CREATE"
+          />
+        </TaskModalLayout>
       )}
       {isUpdateTodosModalOpen && (
-        <ManageTodos onClick={() => setIsUpdateTodosModalOpen(false)} />
+        <TaskModalLayout>
+          <ManageTodos
+            onClose={() => setIsUpdateTodosModalOpen(false)}
+            type="UPDATE"
+          />
+        </TaskModalLayout>
       )}
 
       {isStopTodosModalOpen && (
-        <StopTodosModal
-          onClick={() => setIsStopTodosModalOpen(false)}
-          splitTimes={splitTimes}
-          deleteTimer={resetTimer}
-        />
+        <TaskModalLayout>
+          <StopTodosModal
+            onClose={() => setIsStopTodosModalOpen(false)}
+            splitTimes={splitTimes}
+            deleteTimer={resetTimer}
+            type="FINISH"
+          />
+        </TaskModalLayout>
       )}
       {/* {isOpen && <CreateTodos onClick={() => setIsOpen(false)} />} */}
     </div>

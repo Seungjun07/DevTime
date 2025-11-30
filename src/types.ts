@@ -52,3 +52,5 @@ export interface Task {
 export interface TaskResponse {
   task: Task[];
 }
+
+export type TaskModalType = "CREATE" | "EDIT" | "FINISH" | "UPDATE";
