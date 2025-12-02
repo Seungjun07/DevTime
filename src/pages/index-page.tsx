@@ -14,6 +14,8 @@ import StudyTimer from "../components/timer/study-timer";
 import StopTodosModal from "../components/modal/task/stop-todos-modal";
 import TaskModalLayout from "../components/modal/task/task-modal-layout";
 import CreateTasks from "../components/modal/task/create-tasks";
+import { useDeleteTimer } from "../hooks/mutations/timer/use-delete-timer";
+import { useProfileData } from "../hooks/queries/use-profile-data";
 
 export default function IndexPage() {
   const [isCreateTodosModalOpen, setIsCreateTodosModalOpen] = useState(false);
@@ -26,67 +28,22 @@ export default function IndexPage() {
   const storedTimer = localStorage.getItem("timerId");
   const timerId = storedTimer ? JSON.parse(storedTimer) : null;
 
-  const [timer, setTimer] = useState();
   const [startTime, setStartTime] = useState<Date | null>(null);
 
-  async function deleteTimer() {
-    try {
-      if (!accessToken) throw new Error("로그인 필요");
-      const response = await fetch(
-        `https://devtime.prokit.app/api/timers/${timerId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
-      );
+  const { mutate: deleteTimer, isPending: isDeleteTimerPending } =
+    useDeleteTimer();
 
-      if (!response.ok) throw new Error("타이머 삭제 실패");
-      const data = response.json();
-      console.log(data);
-      resetTimer();
-    } catch (error) {
-      console.log(error);
-    }
+  function handleResetClick() {
+    deleteTimer(timerId);
+    resetTimer();
   }
-  const [profile, setProfile] = useState<MyProfile>();
+
   const accessToken = getAccessToken();
-  async function getProfile() {
-    try {
-      if (!accessToken) throw new Error("로그인 필요");
-
-      let response = await fetch("https://devtime.prokit.app/api/profile", {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      if (response.status === 401) {
-        const tokenRefreshed = await refreshAccessToken();
-        if (tokenRefreshed) {
-          response = await fetch("https://devtime.prokit.app/api/profile", {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          });
-        } else {
-          deleteToken();
-          throw new Error("로그인 필요");
-        }
-      }
-
-      if (!response.ok) throw new Error("프로필 불러오기 실패");
-      const data = await response.json();
-      setProfile(data);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  useEffect(() => {
-    getProfile();
-  }, []);
+  const {
+    data: profile,
+    isLoading: isProfileLoading,
+    error: profileError,
+  } = useProfileData();
 
   async function refreshAccessToken() {
     try {
@@ -132,7 +89,6 @@ export default function IndexPage() {
 
       const data = await response.json();
       console.log("현재 타이머", data);
-      setTimer(data);
 
       setSplitTimes(data.splitTimes || []);
 
@@ -204,11 +160,6 @@ export default function IndexPage() {
 
   const [splitTimes, setSplitTimes] = useState<SplitTime[]>([]);
   const pollingRef = useRef<number | null>(null); //10분 주기
-
-  // // yyyy-mm-dd key 생성
-  // const getDateKey = (date = new Date()) => {
-  //   return date.toISOString().split("T")[0];
-  // };
 
   // splitTimes 누적
   const addSplitTime = (date: Date, ms: number) => {
@@ -377,7 +328,7 @@ export default function IndexPage() {
               <button
                 title="초기화"
                 onClick={() => {
-                  deleteTimer();
+                  handleResetClick();
                 }}
                 className="h-16 w-16 cursor-pointer rounded-4xl bg-white p-2"
               >

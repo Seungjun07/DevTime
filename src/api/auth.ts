@@ -1,10 +1,33 @@
-import { useNavigate } from "react-router-dom";
+import type { LoginData } from "../types";
 import {
   deleteToken,
   getAccessToken,
   getRefreshToken,
   setAccessToken,
 } from "../utils/token";
+
+export async function signIn({
+  email,
+  password,
+}: {
+  email: string;
+  password: string;
+}) {
+  const response = await fetch(`https://devtime.prokit.app/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: email,
+      password: password,
+    }),
+  });
+
+  if (!response.ok) throw new Error("로그인 실패");
+
+  const data: LoginData = await response.json();
+  console.log(data);
+  return data;
+}
 
 export async function fetchWithAuth(url: string, method: string) {
   const accessToken = getAccessToken();

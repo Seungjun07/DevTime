@@ -1,32 +1,35 @@
-import { useEffect, useState } from "react";
 import StudyHeatmap from "../components/study-heatmap";
 import StudyRecord from "../components/study-record";
 import { getAccessToken } from "../utils/token";
 import WeekdayStudyAverage from "../components/weekday-study-average";
+import { useQuery } from "@tanstack/react-query";
 
-export default function DashboardPage() {
-  const [myStudyInfo, setMyStudyInfo] = useState();
-  async function getMyStudyInfo() {
-    try {
-      const accessToken = getAccessToken();
-      if (!accessToken) throw new Error("로그인 필요");
+async function getMyStudyInfo() {
+  try {
+    const accessToken = getAccessToken();
+    if (!accessToken) throw new Error("로그인 필요");
 
-      const response = await fetch("https://devtime.prokit.app/api/stats", {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      if (!response.ok) throw new Error("정보 불러오기 실패");
-      const data = await response.json();
-      setMyStudyInfo(data);
-    } catch (error) {
-      console.log(error);
-    }
+    const response = await fetch("https://devtime.prokit.app/api/stats", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    if (!response.ok) throw new Error("정보 불러오기 실패");
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.log(error);
   }
-
-  useEffect(() => {
-    getMyStudyInfo();
-  }, []);
+}
+export default function DashboardPage() {
+  const {
+    data: myStudyInfo,
+    isLoading,
+    error,
+  } = useQuery({
+    queryFn: getMyStudyInfo,
+    queryKey: ["myStudyInfo"],
+  });
 
   function formatTime(sec: number) {
     const time = Math.floor(sec / 1000);
@@ -54,6 +57,9 @@ export default function DashboardPage() {
   const weekdayStudyTime = Object.entries(
     myStudyInfo?.weekdayStudyTime || {},
   ).map(([day, value]) => ({ day, value }));
+
+  if (error) return <div>오류가 발생했습니다...</div>;
+  if (isLoading) return <div>로딩 중...</div>;
 
   return (
     <div className="flex flex-col gap-4">

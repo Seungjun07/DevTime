@@ -3,6 +3,7 @@ import { type Task, type TaskModalType } from "../../../types";
 import { fetchTasksOnServer, updateTasksOnServer } from "../../../api/todos";
 import TaskList from "../../task/task-list";
 import useTasks from "../../../hooks/use-tasks";
+import { useTasksData } from "../../../hooks/queries/use-tasks-data";
 
 export default function ManageTodos({
   onClose,
@@ -32,10 +33,10 @@ export default function ManageTodos({
 
   const isDisabled = !isTasksChanged(prevTasks, tasks);
 
+  const studyLogId = JSON.parse(localStorage.getItem("studyLogId") || "");
+  const { data, isLoading } = useTasksData(studyLogId);
   async function getTodos() {
     try {
-      const studyLogId = JSON.parse(localStorage.getItem("studyLogId") || "");
-
       const data = await fetchTasksOnServer(studyLogId);
       setTasks(data);
       setPrevTasks(data);

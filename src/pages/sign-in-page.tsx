@@ -5,15 +5,9 @@ import { useEffect, useRef, useState } from "react";
 import { ERROR } from "../lib/error";
 import { deleteToken, setAccessToken, setRefreshToken } from "../utils/token";
 import DuplicatedModal from "../components/modal/duplicated-modal";
-
-type LoginData = {
-  accessToken: string;
-  isDuplicateLogin: boolean;
-  isFirstLogin: boolean;
-  message: string;
-  refreshToken: string;
-  success: boolean;
-};
+import type { LoginData } from "../types";
+import { useSignIn } from "../hooks/mutations/auth/use-sign-in";
+import { useAuthStore } from "../store/auth";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -69,10 +63,28 @@ export default function SignInPage() {
   // }
   const [isDuplicateLogin, setIsDuplicateLogin] = useState(false);
   const [loginData, setLoginData] = useState<LoginData | null>(null);
+  const setTokens = useAuthStore((state) => state.setTokens);
+
+  const { mutate: signIn, isPending } = useSignIn({
+    onSuccess: (data) => {
+      setTokens(data);
+
+      if (data.isDuplicateLogin) {
+        alert("중복 로그인");
+      }
+
+      if (data.isFirstLogin) {
+        navigate("/profile", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
+    },
+  });
 
   async function handleSignIn() {
     setEmailTouched(true);
     setPasswordTouched(true);
+
     const emailError = validateEmail(email);
     const passwordError = validatePassword(password);
 
@@ -81,45 +93,31 @@ export default function SignInPage() {
       return;
     }
 
-    try {
-      const response = await fetch(
-        `https://devtime.prokit.app/api/auth/login`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: email,
-            password: password,
-          }),
-        },
-      );
-
-      if (!response.ok) throw new Error("로그인 실패");
-
-      const data: LoginData = await response.json();
-      console.log(data);
-
-      // 중복 로그인 처리
-      if (data.isDuplicateLogin) {
-        setLoginData(data);
-        console.log("중복 로그인");
-        setIsDuplicateLogin(data.isDuplicateLogin);
-      }
-
-      setAccessToken(data.accessToken);
-      setRefreshToken(data.refreshToken);
-
-      if (data.isFirstLogin) {
-        navigate("/profile", { replace: true });
-      } else {
-        navigate("/", { replace: true });
-      }
-    } catch (error) {
-      alert("로그인 정보를 다시 확인해 주세요");
-      emailRef.current?.focus();
-      setPassword("");
-    }
+    signIn({ email, password });
   }
+  //   try {
+  //     const data = await signIn({ email, password });
+
+  //     // 중복 로그인 처리
+  //     if (data.isDuplicateLogin) {
+  //       setLoginData(data);
+  //       console.log("중복 로그인");
+  //       setIsDuplicateLogin(data.isDuplicateLogin);
+  //     }
+
+  //     setAccessToken(data.accessToken);
+  //     setRefreshToken(data.refreshToken);
+
+  //     if (data.isFirstLogin) {
+  //       navigate("/profile", { replace: true });
+  //     } else {
+  //       navigate("/", { replace: true });
+  //     }
+  //   } catch (error) {
+  //     alert("로그인 정보를 다시 확인해 주세요");
+  //     emailRef.current?.focus();
+  //     setPassword("");
+  //   }
 
   function handleDuplicateConfirm() {
     if (!loginData) return;

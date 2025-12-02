@@ -5,6 +5,8 @@ import ProfileImage from "../components/profile/profile-image";
 import { getAccessToken } from "../utils/token";
 import { fetchWithAuth } from "../api/auth";
 import type { TechStack } from "../types";
+import { useCreateTechStack } from "../hooks/mutations/tech-stacks/use-create-tech-stacks";
+import ProfileTechStack from "../components/profile/profile-tech-stack";
 
 export default function ProfileDetailPage() {
   const [profileForm, setProfileForm] = useState({
@@ -55,35 +57,45 @@ export default function ProfileDetailPage() {
     return () => clearTimeout(delayDebounce);
   }, [keyword]);
 
-  async function createNewStack() {
-    try {
-      const accessToken = getAccessToken();
-
-      if (!accessToken) throw new Error("토큰 만료 - 로그인 실패");
-
-      console.log(typeof keyword);
-      const response = await fetch(
-        "https://devtime.prokit.app/api/tech-stacks",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ name: keyword }),
-        },
-      );
-
-      if (!response.ok) throw new Error("기술 스택 생성 실패");
-      const data = await response.json();
-      console.log(data);
-      setSelectedTechStacks((prev) => [...prev, data.techStack]);
+  const { mutate: createTechStack, isPending } = useCreateTechStack({
+    onSuccess: (newStack) => {
+      setSelectedTechStacks((prev) => [...prev, newStack]);
       setKeyword("");
       setSuggestions([]);
-    } catch (error) {
-      console.log(error);
-    }
+    },
+  });
+
+  function handleCreateClick() {
+    createTechStack(keyword);
   }
+  // async function createNewStack() {
+  //   try {
+  //     const accessToken = getAccessToken();
+
+  //     if (!accessToken) throw new Error("토큰 만료 - 로그인 실패");
+
+  //     const response = await fetch(
+  //       "https://devtime.prokit.app/api/tech-stacks",
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           Authorization: `Bearer ${accessToken}`,
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({ name: keyword }),
+  //       },
+  //     );
+
+  //     if (!response.ok) throw new Error("기술 스택 생성 실패");
+  //     const data = await response.json();
+  //     console.log(data);
+  //     setSelectedTechStacks((prev) => [...prev, data.techStack]);
+  //     setKeyword("");
+  //     setSuggestions([]);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // }
 
   function deleteStack(id: string) {
     setSelectedTechStacks((prev) => prev.filter((stack) => stack.id !== id));
@@ -326,6 +338,7 @@ export default function ProfileDetailPage() {
       </div>
 
       <div className="flex w-105 flex-col gap-4">
+        {/* <ProfileTechStack keyword={keyword} suggestions={suggestions} /> */}
         <div className="relative flex flex-col gap-2">
           <label
             htmlFor="studyStack"
@@ -354,7 +367,7 @@ export default function ProfileDetailPage() {
                   </li>
                 ))}
               <li
-                onClick={createNewStack}
+                onClick={handleCreateClick}
                 className="text-secondary-indigo cursor-pointer text-[16px] leading-5 font-semibold"
               >
                 + Add New Item

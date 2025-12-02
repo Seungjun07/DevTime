@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import ProfilePopOver from "./profile-pop-over";
 import { deleteToken, getAccessToken } from "../utils/token";
 import type { MyProfile } from "../types";
+import { useProfileData } from "../hooks/queries/use-profile-data";
 
 export default function Profile() {
   const [isClicked, setIsClicked] = useState(false);
 
-  const [profile, setProfile] = useState<MyProfile>();
+  // const [profile, setProfile] = useState<MyProfile>();
   const accessToken = getAccessToken();
 
   async function refreshAccessToken() {
@@ -30,42 +31,9 @@ export default function Profile() {
     }
   }
 
-  async function getProfile() {
-    try {
-      if (!accessToken) throw new Error("로그인 필요");
+  const { data: profile, isLoading } = useProfileData();
 
-      let response = await fetch("https://devtime.prokit.app/api/profile", {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      if (response.status === 401) {
-        const tokenRefreshed = await refreshAccessToken();
-        if (tokenRefreshed) {
-          response = await fetch("https://devtime.prokit.app/api/profile", {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          });
-        } else {
-          deleteToken();
-          throw new Error("로그인 필요");
-        }
-      }
-
-      if (!response.ok) throw new Error("프로필 불러오기 실패");
-      const data = await response.json();
-      setProfile(data);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  useEffect(() => {
-    getProfile();
-  }, []);
-
+  if (isLoading) return <div>로딩 중입니다..</div>;
   return (
     <>
       <div

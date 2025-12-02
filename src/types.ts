@@ -1,3 +1,12 @@
+export interface LoginData {
+  accessToken: string;
+  isDuplicateLogin: boolean;
+  isFirstLogin: boolean;
+  message: string;
+  refreshToken: string;
+  success: boolean;
+}
+
 export interface Profile {
   career: string; // 개발 경력 (년수)
   purpose: string; // 공부 목적
@@ -24,7 +33,7 @@ export interface TechStack {
 export interface MyProfile {
   email: string;
   nickname: string;
-  profile: {
+  profile?: {
     career: string;
     goal: string;
     profileImage: string;

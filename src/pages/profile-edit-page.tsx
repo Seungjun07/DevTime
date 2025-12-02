@@ -3,37 +3,11 @@ import ProfileImage from "../components/profile/profile-image";
 import StackItem from "../components/stack-item";
 import { getAccessToken } from "../utils/token";
 import { type MyProfile, type TechStack } from "../types";
+import { useProfileData } from "../hooks/queries/use-profile-data";
+import { useCreateTechStack } from "../hooks/mutations/tech-stacks/use-create-tech-stacks";
 
 export default function ProfileEditPage() {
-  const [profile, setProfile] = useState<MyProfile>();
-  async function getProfile() {
-    try {
-      const accessToken = getAccessToken();
-
-      if (!accessToken) throw new Error("로그인 필요");
-
-      const response = await fetch("https://devtime.prokit.app/api/profile", {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      if (!response.ok) throw new Error("프로필 불러오기 실패");
-      const data = await response.json();
-
-      setProfile(data);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  useEffect(() => {
-    getProfile();
-  }, []);
-
-  const [purpose, setPurpose] = useState<string>(
-    profile?.profile.purpose || "",
-  );
+  const { data: profile, isLoading } = useProfileData();
 
   const [keyword, setKeyword] = useState<string>("");
   const [suggestions, setSuggestions] = useState<TechStack[]>([]);
@@ -76,35 +50,46 @@ export default function ProfileEditPage() {
     return () => clearTimeout(delayDebounce);
   }, [keyword]);
 
-  async function createNewStack() {
-    try {
-      const accessToken = getAccessToken();
-
-      if (!accessToken) throw new Error("토큰 만료 - 로그인 실패");
-
-      console.log(typeof keyword);
-      const response = await fetch(
-        "https://devtime.prokit.app/api/tech-stacks",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ name: keyword }),
-        },
-      );
-
-      if (!response.ok) throw new Error("기술 스택 생성 실패");
-      const data = await response.json();
-      console.log(data);
-      setSelectedTechStacks((prev) => [...prev, data.techStack]);
+  const { mutate: createTechStack, isPending } = useCreateTechStack({
+    onSuccess: (newStack) => {
+      setSelectedTechStacks((prev) => [...prev, newStack]);
       setKeyword("");
       setSuggestions([]);
-    } catch (error) {
-      console.log(error);
-    }
+    },
+  });
+
+  function handleCreateClick() {
+    createTechStack(keyword);
   }
+  // async function createNewStack() {
+  //   try {
+  //     const accessToken = getAccessToken();
+
+  //     if (!accessToken) throw new Error("토큰 만료 - 로그인 실패");
+
+  //     console.log(typeof keyword);
+  //     const response = await fetch(
+  //       "https://devtime.prokit.app/api/tech-stacks",
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           Authorization: `Bearer ${accessToken}`,
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({ name: keyword }),
+  //       },
+  //     );
+
+  //     if (!response.ok) throw new Error("기술 스택 생성 실패");
+  //     const data = await response.json();
+  //     console.log(data);
+  //     setSelectedTechStacks((prev) => [...prev, data.techStack]);
+  //     setKeyword("");
+  //     setSuggestions([]);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // }
 
   function deleteStack(id: string) {
     setSelectedTechStacks((prev) => prev.filter((stack) => stack.id !== id));
@@ -247,7 +232,7 @@ export default function ProfileEditPage() {
                 id="studyGoal"
                 className="placeholder-custom w-105 rounded bg-gray-50 px-4 py-3"
                 placeholder={
-                  profile?.profile.purpose
+                  profile?.profile?.purpose
                     ? `${profile?.profile.purpose}`
                     : "공부 목표를 입력해 주세요."
                 }
@@ -273,7 +258,10 @@ export default function ProfileEditPage() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              {/* <StackItem techStacks={}, deleteStack={deleteStack}/> */}
+              <StackItem
+                techStacks={selectedTechStacks}
+                deleteStack={deleteStack}
+              />
             </div>
           </div>
         </div>

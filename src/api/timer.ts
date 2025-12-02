@@ -23,3 +23,24 @@ export async function createTimer(todayGoal: string, tasks: string[]) {
   // 타이머 Id값 관리 필요 data.timerId
   return data;
 }
+
+export async function deleteTimer(timerId: string) {
+  const accessToken = getAccessToken();
+
+  if (!accessToken) throw new Error("로그인 필요");
+  const response = await fetch(
+    `https://devtime.prokit.app/api/timers/${timerId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+
+  if (!response.ok) throw new Error("타이머 삭제 실패");
+  const data = response.json();
+
+  return data;
+  // resetTimer();
+}
