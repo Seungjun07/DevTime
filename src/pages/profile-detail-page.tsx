@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import StackItem from "../components/stack-item";
 import { useEffect, useState, type ChangeEvent } from "react";
 import ProfileImage from "../components/profile/profile-image";
@@ -9,6 +9,7 @@ import { useCreateTechStack } from "../hooks/mutations/tech-stacks/use-create-te
 import ProfileTechStack from "../components/profile/profile-tech-stack";
 
 export default function ProfileDetailPage() {
+  const navigate = useNavigate();
   const [profileForm, setProfileForm] = useState({
     career: "",
     purpose: "",
@@ -69,33 +70,9 @@ export default function ProfileDetailPage() {
     createTechStack(keyword);
   }
   // async function createNewStack() {
-  //   try {
-  //     const accessToken = getAccessToken();
-
-  //     if (!accessToken) throw new Error("토큰 만료 - 로그인 실패");
-
-  //     const response = await fetch(
-  //       "https://devtime.prokit.app/api/tech-stacks",
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           Authorization: `Bearer ${accessToken}`,
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify({ name: keyword }),
-  //       },
-  //     );
-
-  //     if (!response.ok) throw new Error("기술 스택 생성 실패");
-  //     const data = await response.json();
-  //     console.log(data);
   //     setSelectedTechStacks((prev) => [...prev, data.techStack]);
   //     setKeyword("");
   //     setSuggestions([]);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // }
 
   function deleteStack(id: string) {
     setSelectedTechStacks((prev) => prev.filter((stack) => stack.id !== id));
@@ -228,6 +205,7 @@ export default function ProfileDetailPage() {
 
       setFile(null);
       setPreview(null);
+      navigate("/");
     } catch (error) {
       console.error("업로드 중 오류 발생", error);
     } finally {

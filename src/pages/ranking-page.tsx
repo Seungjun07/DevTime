@@ -1,31 +1,17 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import RankItem from "../components/rank-item";
-import { type RankingItem } from "../types";
-import { fetchWithAuth } from "../api/auth";
+import { useRankingData } from "../hooks/queries/use-ranking-data";
 
 export default function RankingPage() {
-  const [rankings, setRankins] = useState<RankingItem[]>([]);
   const [sortBy, setSortBy] = useState("total");
+
+  const { data: rankings, isLoading } = useRankingData(sortBy);
 
   function handleSortBy(standard: string) {
     setSortBy(standard);
   }
-  async function fetchRanking() {
-    try {
-      const data = await fetchWithAuth(
-        `https://devtime.prokit.app/api/rankings?sortBy=${sortBy}`,
-        "GET",
-      );
-      console.log(data);
-      setRankins(data.data.rankings);
-    } catch (error) {
-      console.log(error);
-    }
-  }
 
-  useEffect(() => {
-    fetchRanking();
-  }, [sortBy]);
+  if (isLoading) return <div>로딩 중입니다..</div>;
 
   return (
     <div className="flex flex-col gap-3">

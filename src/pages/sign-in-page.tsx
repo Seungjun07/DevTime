@@ -61,12 +61,12 @@ export default function SignInPage() {
 
   const { mutate: signIn, isPending } = useSignIn({
     onSuccess: (data) => {
-      setTokens(data);
-
       if (data.isDuplicateLogin) {
         setIsDuplicateLogin(true);
         return;
       }
+
+      setTokens(data);
 
       if (data.isFirstLogin) {
         navigate("/profile", { replace: true });

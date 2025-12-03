@@ -1,49 +1,20 @@
-import { useEffect, useState } from "react";
-import { getAccessToken } from "../utils/token";
 import editIcon from "./../assets/edit.png";
 import { Link } from "react-router-dom";
-import { type MyProfile } from "../types";
 import defaultAvartar from "./../assets/user.png";
+import { useProfileData } from "../hooks/queries/use-profile-data";
 
 export default function MyPage() {
-  const [profile, setProfile] = useState<MyProfile>();
-  const [imageUrl, setImageUrl] = useState("");
+  const { data: profile, isLoading, error } = useProfileData();
+  const imageUrl = `https://dev-time-bucket.s3.ap-northeast-2.amazonaws.com/${profile?.profile?.profileImage}`;
 
-  async function getMyProfile() {
-    try {
-      const accessToken = getAccessToken();
-
-      if (!accessToken) throw new Error("로그인이 필요합니다.");
-
-      const response = await fetch(`https://devtime.prokit.app/api/profile`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      if (!response.ok) throw new Error("프로필 불러오기 실패");
-
-      const data = await response.json();
-      setProfile(data);
-      console.log(data);
-      setImageUrl(
-        `https://dev-time-bucket.s3.ap-northeast-2.amazonaws.com/${data.profile.profileImage}`,
-      );
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  useEffect(() => {
-    getMyProfile();
-  }, []);
+  if (error) return <div>프로필 불러오기 실패</div>;
 
   return (
     <div className="m-auto flex gap-14 rounded-xl bg-white p-9">
       <div className="flex h-45 w-45 items-center justify-center bg-[#f0f2f5]">
         <img
-          className={`${imageUrl ? "h-full w-full" : "h-12 w-12"} object-cover`}
-          src={imageUrl ? imageUrl : defaultAvartar}
+          className={`${profile?.profile?.profileImage ? "h-full w-full" : "h-12 w-12"} object-cover`}
+          src={profile?.profile?.profileImage ? imageUrl : defaultAvartar}
         />
       </div>
 

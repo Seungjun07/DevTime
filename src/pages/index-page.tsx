@@ -32,6 +32,8 @@ export default function IndexPage() {
   function handleStartTimerClick() {
     if (!isLogin) {
       setShowLoginModal(true);
+    } else {
+      setIsCreateTodosModalOpen(true);
     }
   }
 
@@ -277,7 +279,7 @@ export default function IndexPage() {
   return (
     <div>
       {showLoginModal && <SignInAlertModal close={onClose} />}
-      {accessToken ? (
+      {isLogin ? (
         <h1 className="pb-20 text-center text-7xl">
           {profile?.profile?.goal
             ? `${profile.profile.goal}`
@@ -353,6 +355,7 @@ export default function IndexPage() {
                 title="초기화"
                 onClick={() => {
                   handleResetClick();
+                  setIsCreateTodosModalOpen(false);
                 }}
                 className="h-16 w-16 cursor-pointer rounded-4xl bg-white p-2"
               >

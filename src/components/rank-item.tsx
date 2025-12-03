@@ -1,9 +1,11 @@
 import type { RankingItem } from "../types";
-import profileImg from "./../assets/Profile.png";
+import defaultAvartar from "./../assets/Profile.png";
 
 export default function RankItem(props: RankingItem) {
   const totalStudyTime = (props.totalStudyTime / 3600 / 1000).toFixed(0);
   const averageStudyTime = (props.averageStudyTime / 3600 / 1000).toFixed(1);
+
+  const profileImage = `https://dev-time-bucket.s3.ap-northeast-2.amazonaws.com/${props?.profile?.profileImage}`;
   return (
     <div className="flex gap-9 rounded-xl bg-white px-6 py-3">
       <div className="flex h-[126px] flex-col items-start gap-4">
@@ -14,8 +16,8 @@ export default function RankItem(props: RankingItem) {
         </div>
         <div className="h-20 w-20">
           <img
-            className="rounded-full object-cover"
-            src={profileImg}
+            className="h-20 w-20 rounded-full object-cover"
+            src={props.profile.profileImage ? profileImage : defaultAvartar}
             alt="프로필 이미지"
           />
         </div>

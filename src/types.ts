@@ -10,8 +10,9 @@ export interface LoginData {
 export interface Profile {
   career: string; // 개발 경력 (년수)
   purpose: string; // 공부 목적
-  imageUrl: string | null; // 프로필 이미지 (없을 수도 있음)
+  imageUrl?: string | null; // 프로필 이미지 (없을 수도 있음)
   techStacks: TechStack[]; // 사용 기술 스택
+  profileImage?: string | null;
 }
 
 export interface RankingItem {
