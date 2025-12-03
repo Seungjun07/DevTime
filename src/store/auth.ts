@@ -1,29 +1,57 @@
 import { create } from "zustand";
 import type { LoginData } from "../types";
-import { setAccessToken, setRefreshToken } from "../utils/token";
+import {
+  deleteToken,
+  getAccessToken,
+  getRefreshToken,
+  setAccessToken,
+  setRefreshToken,
+} from "../utils/token";
+import { combine } from "zustand/middleware";
+import { logout } from "../api/auth";
 
 interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
-  setTokens: (data: LoginData) => void;
-  createAccessToken: () => void;
-  createRefreshToken: () => void;
-  logout: () => void;
+  isLogin: boolean;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  accessToken: null,
-  refreshToken: null,
-  setTokens: (data) => {
-    set({
-      accessToken: data.accessToken,
-      refreshToken: data.refreshToken,
-    });
+const accessToken = getAccessToken();
+const refreshToken = getRefreshToken();
 
-    setAccessToken(data.accessToken);
-    setRefreshToken(data.refreshToken);
-  },
-  createAccessToken: () => {},
-  createRefreshToken: () => {},
-  logout: () => {},
-}));
+const initialState = {
+  accessToken: accessToken,
+  refreshToken: refreshToken,
+  isLogin: !!accessToken,
+} as AuthState;
+
+export const useAuthStore = create(
+  combine(initialState, (set) => ({
+    actions: {
+      setTokens: (tokens: LoginData) => {
+        setAccessToken(tokens.accessToken);
+        setRefreshToken(tokens.refreshToken);
+
+        set({
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          isLogin: true,
+        });
+      },
+      logout: async () => {
+        try {
+          await logout();
+        } catch (error) {
+          console.log("로그아웃 실패!");
+        }
+        deleteToken();
+
+        set({
+          accessToken: null,
+          refreshToken: null,
+          isLogin: false,
+        });
+      },
+    },
+  })),
+);

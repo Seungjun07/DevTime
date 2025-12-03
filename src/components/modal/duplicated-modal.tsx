@@ -1,8 +1,4 @@
-export default function DuplicatedModal({
-  handleConfirm,
-}: {
-  handleConfirm: () => void;
-}) {
+export default function DuplicatedModal({ close }: { close: () => void }) {
   return (
     <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       {/* 모달 박스 */}
@@ -20,7 +16,7 @@ export default function DuplicatedModal({
 
         <div>
           <button
-            onClick={handleConfirm}
+            onClick={close}
             className="bg-primary-blue h-12 rounded-[5px] px-4 py-3 text-lg leading-[22px] font-semibold text-white"
           >
             확인

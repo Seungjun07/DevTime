@@ -2,31 +2,17 @@ import userIcon from "./../assets/user.png";
 import logoutIcon from "./../assets/logout.png";
 import { Link, useNavigate } from "react-router-dom";
 import { deleteToken, getAccessToken } from "../utils/token";
+import { useAuthStore } from "../store/auth";
 
 export default function ProfilePopOver({ onClick }: { onClick: () => void }) {
   const navigate = useNavigate();
 
-  async function logout() {
-    try {
-      const accessToken = getAccessToken();
-      if (!accessToken) throw new Error("로그인 상태가 아님");
+  const logout = useAuthStore((state) => state.actions.logout);
 
-      const response = await fetch(
-        "https://devtime.prokit.app/api/auth/logout",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
-      );
-      if (!response.ok) throw new Error("로그아웃 실패");
+  async function handleLogout() {
+    await logout();
 
-      deleteToken();
-      navigate("/", { replace: true });
-    } catch (error) {
-      console.log(error);
-    }
+    navigate("/", { replace: true });
   }
 
   return (
@@ -43,7 +29,7 @@ export default function ProfilePopOver({ onClick }: { onClick: () => void }) {
       </Link>
       <hr className="text-disabled-300" />
 
-      <div className="flex cursor-pointer gap-4" onClick={logout}>
+      <div className="flex cursor-pointer gap-4" onClick={handleLogout}>
         <img
           className="h-5 w-5 object-cover"
           src={logoutIcon}

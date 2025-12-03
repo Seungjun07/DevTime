@@ -91,17 +91,20 @@ export default function ProfileEditPage() {
   //   }
   // }
 
+  const preview = `https://dev-time-bucket.s3.ap-northeast-2.amazonaws.com/${profile?.profile?.profileImage}`;
+
   function deleteStack(id: string) {
     setSelectedTechStacks((prev) => prev.filter((stack) => stack.id !== id));
   }
 
   return (
     <div className="flex flex-col gap-9 rounded-xl bg-white p-9">
-      {/* <ProfileImage /> */}
+      <ProfileImage preview={preview} />
 
       <div className="flex gap-18">
-        <div className="flex flex-col gap-6">
-          <div>
+        <div className="flex flex-1 flex-col gap-6">
+          {/* 닉네임 */}
+          <div className="flex flex-col gap-2">
             <label
               htmlFor="nickname"
               className="text-sm leading-[18px] font-medium text-gray-600"
@@ -111,10 +114,10 @@ export default function ProfileEditPage() {
             <div className="flex gap-3">
               <input
                 id="nickname"
-                className="h-11 rounded bg-gray-50 px-4 py-3"
+                className="h-11 flex-1 rounded-sm bg-gray-50 px-4 py-3 text-[16px] leading-5 font-medium placeholder:text-gray-600"
                 placeholder={profile?.nickname}
               />
-              <button className="bg-disabled-200 h-11 px-4 py-3">
+              <button className="bg-disabled-200 text-disabled-400 h-11 px-4 py-3 text-sm leading-[18px] font-semibold">
                 중복 확인
               </button>
             </div>
@@ -131,7 +134,7 @@ export default function ProfileEditPage() {
             <div>
               <select
                 id="studyPurpose"
-                className="placeholder-custom w-105 rounded bg-gray-50 px-4 py-3"
+                className="placeholder-custom w-full rounded bg-gray-50 px-4 py-3"
               >
                 <option value={""}>공부의 목적을 선택해 주세요.</option>
                 <option value={"취업 준비"}>취업 준비</option>
@@ -144,10 +147,10 @@ export default function ProfileEditPage() {
                 </option>
                 <option value={"기타"}>기타(직접 입력)</option>
               </select>
-              {/* <input
-                className="placeholder-custom w-105 rounded bg-gray-50 px-4 py-3"
+              <input
+                className="placeholder-custom w-full rounded bg-gray-50 px-4 py-3"
                 placeholder="기타 "
-              /> */}
+              />
             </div>
           </div>
 
@@ -161,7 +164,7 @@ export default function ProfileEditPage() {
             <div>
               <input
                 id="password"
-                className="placeholder-custom w-105 rounded bg-gray-50 px-4 py-3"
+                className="placeholder-custom w-full rounded bg-gray-50 px-4 py-3"
                 type="password"
                 placeholder="비밀번호를 입력해 주세요."
               />
@@ -183,7 +186,7 @@ export default function ProfileEditPage() {
             <div>
               <input
                 id="confirmPassword"
-                className="placeholder-custom w-105 rounded bg-gray-50 px-4 py-3"
+                className="placeholder-custom w-full rounded bg-gray-50 px-4 py-3"
                 type="password"
                 placeholder="비밀번호를 한 번 더 입력해 주세요."
               />
@@ -197,8 +200,8 @@ export default function ProfileEditPage() {
         </div>
 
         {/* 오른쪽 박스 */}
-        <div className="flex flex-col gap-6">
-          <div className="">
+        <div className="flex flex-1 flex-col gap-6">
+          <div className="flex w-full flex-col gap-2">
             <label
               htmlFor="developCareer"
               className="text-[14px] leading-[18px] font-medium text-gray-600"
@@ -208,7 +211,7 @@ export default function ProfileEditPage() {
             <div>
               <select
                 id="developCareer"
-                className="placeholder-custom w-105 rounded bg-gray-50 px-4 py-3"
+                className="placeholder-custom h-11 w-full rounded bg-gray-50 px-4 py-3"
               >
                 <option value={""}>개발 경력을 선택해 주세요.</option>
                 <option value={""}>경력 없음</option>
@@ -230,7 +233,7 @@ export default function ProfileEditPage() {
             <div>
               <input
                 id="studyGoal"
-                className="placeholder-custom w-105 rounded bg-gray-50 px-4 py-3"
+                className="placeholder-custom w-full rounded bg-gray-50 px-4 py-3"
                 placeholder={
                   profile?.profile?.purpose
                     ? `${profile?.profile.purpose}`
@@ -251,7 +254,7 @@ export default function ProfileEditPage() {
               <div>
                 <input
                   id="studyStack"
-                  className="placeholder-custom w-105 rounded bg-gray-50 px-4 py-3"
+                  className="placeholder-custom w-full rounded bg-gray-50 px-4 py-3"
                   placeholder="기술 스택을 검색해 등록해 주세요."
                 />
               </div>

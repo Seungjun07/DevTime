@@ -3,6 +3,7 @@ import { getAccessToken } from "../utils/token";
 import editIcon from "./../assets/edit.png";
 import { Link } from "react-router-dom";
 import { type MyProfile } from "../types";
+import defaultAvartar from "./../assets/user.png";
 
 export default function MyPage() {
   const [profile, setProfile] = useState<MyProfile>();
@@ -39,14 +40,17 @@ export default function MyPage() {
 
   return (
     <div className="m-auto flex gap-14 rounded-xl bg-white p-9">
-      <div className="h-45 w-45 bg-[#f0f2f5]">
-        <img src={imageUrl} />
+      <div className="flex h-45 w-45 items-center justify-center bg-[#f0f2f5]">
+        <img
+          className={`${imageUrl ? "h-full w-full" : "h-12 w-12"} object-cover`}
+          src={imageUrl ? imageUrl : defaultAvartar}
+        />
       </div>
 
       <div className="flex flex-1 flex-col gap-12">
         <div className="flex flex-col gap-1">
           <p className="text-secondary-indigo text-[18px] leading-[22px] font-medium">
-            tony_engineer
+            {profile?.nickname}
           </p>
           {profile?.profile?.goal ? (
             <p className="text-secondary-indigo text-2xl leading-[30px] font-bold">

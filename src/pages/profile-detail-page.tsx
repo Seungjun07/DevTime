@@ -221,7 +221,7 @@ export default function ProfileDetailPage() {
       const { presignedUrl, key } = await getPresignedUrl(file);
       console.log("1. URL 발급 완료");
 
-      // await uploadToS3(file, presignedUrl);
+      await uploadToS3(file, presignedUrl);
       console.log("2. S3 업로드 완료");
 
       await createProfile(key);

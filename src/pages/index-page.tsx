@@ -16,6 +16,8 @@ import TaskModalLayout from "../components/modal/task/task-modal-layout";
 import CreateTasks from "../components/modal/task/create-tasks";
 import { useDeleteTimer } from "../hooks/mutations/timer/use-delete-timer";
 import { useProfileData } from "../hooks/queries/use-profile-data";
+import { useAuthStore } from "../store/auth";
+import SignInAlertModal from "../components/modal/sign-in-alert-modal";
 
 export default function IndexPage() {
   const [isCreateTodosModalOpen, setIsCreateTodosModalOpen] = useState(false);
@@ -23,7 +25,19 @@ export default function IndexPage() {
   const [isStopTodosModalOpen, setIsStopTodosModalOpen] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
+
+  const isLogin = useAuthStore((state) => state.isLogin);
+
   const [showLoginModal, setShowLoginModal] = useState(false);
+  function handleStartTimerClick() {
+    if (!isLogin) {
+      setShowLoginModal(true);
+    }
+  }
+
+  function onClose() {
+    setShowLoginModal(false);
+  }
 
   const storedTimer = localStorage.getItem("timerId");
   const timerId = storedTimer ? JSON.parse(storedTimer) : null;
@@ -262,9 +276,7 @@ export default function IndexPage() {
   if (isLoading) return <div>로딩 중...</div>;
   return (
     <div>
-      {/* {!accessToken && (
-        <SignInAlertModal handleConfirm={() => setShowLoginModal(false)} />
-      )} */}
+      {showLoginModal && <SignInAlertModal close={onClose} />}
       {accessToken ? (
         <h1 className="pb-20 text-center text-7xl">
           {profile?.profile?.goal
@@ -285,31 +297,43 @@ export default function IndexPage() {
 
         <div className="relative flex items-center gap-[134px]">
           <div className="m-auto flex items-end justify-end gap-20">
-            <img
+            <button
+              className="cursor-pointer"
               onClick={() => {
                 if (timerId) {
                   startTimer();
                 } else {
-                  setIsCreateTodosModalOpen(true);
+                  handleStartTimerClick();
                 }
               }}
-              src={isRunning ? enabledStartIcon : startIcon}
-              alt="타이머 시작 버튼"
-            />
-            <img
-              src={isRunning ? pauseIcon : enabledPauseIcon}
+            >
+              <img
+                src={isRunning ? enabledStartIcon : startIcon}
+                alt="타이머 시작 버튼"
+              />
+            </button>
+            <button
+              className="cursor-pointer"
               onClick={pauseTimer}
-              alt="타이머 중지 버튼"
-            />
-            <img
+              disabled={!timerId}
+            >
+              <img
+                src={isRunning ? pauseIcon : enabledPauseIcon}
+                alt="타이머 중지 버튼"
+              />
+            </button>
+            <button
+              className="cursor-pointer"
               onClick={() => {
                 setIsStopTodosModalOpen(true);
-
-                // resetTimer();
               }}
-              src={seconds ? finishIcon : enabledFinishIcon}
-              alt="타이머 종료 버튼"
-            />
+              disabled={!timerId}
+            >
+              <img
+                src={seconds ? finishIcon : enabledFinishIcon}
+                alt="타이머 종료 버튼"
+              />
+            </button>
           </div>
 
           {timerId && (

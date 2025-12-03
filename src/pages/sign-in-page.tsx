@@ -2,10 +2,7 @@ import { useNavigate } from "react-router-dom";
 import logo from "./../assets/logo-vertical.svg";
 import symbolLogo from "./../assets/Symbol-Logo.png";
 import { useEffect, useRef, useState } from "react";
-import { ERROR } from "../lib/error";
-import { deleteToken, setAccessToken, setRefreshToken } from "../utils/token";
 import DuplicatedModal from "../components/modal/duplicated-modal";
-import type { LoginData } from "../types";
 import { useSignIn } from "../hooks/mutations/auth/use-sign-in";
 import { useAuthStore } from "../store/auth";
 
@@ -16,8 +13,6 @@ export default function SignInPage() {
   const emailRef = useRef<HTMLInputElement>(null);
 
   const [errors, setErrors] = useState({ email: "", password: "" });
-  // const [isValid, setIsValid] = useState(false);
-
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
   const navigate = useNavigate();
@@ -62,15 +57,15 @@ export default function SignInPage() {
   //   return newErrors;
   // }
   const [isDuplicateLogin, setIsDuplicateLogin] = useState(false);
-  const [loginData, setLoginData] = useState<LoginData | null>(null);
-  const setTokens = useAuthStore((state) => state.setTokens);
+  const setTokens = useAuthStore((state) => state.actions.setTokens);
 
   const { mutate: signIn, isPending } = useSignIn({
     onSuccess: (data) => {
       setTokens(data);
 
       if (data.isDuplicateLogin) {
-        alert("중복 로그인");
+        setIsDuplicateLogin(true);
+        return;
       }
 
       if (data.isFirstLogin) {
@@ -95,46 +90,15 @@ export default function SignInPage() {
 
     signIn({ email, password });
   }
-  //   try {
-  //     const data = await signIn({ email, password });
 
-  //     // 중복 로그인 처리
-  //     if (data.isDuplicateLogin) {
-  //       setLoginData(data);
-  //       console.log("중복 로그인");
-  //       setIsDuplicateLogin(data.isDuplicateLogin);
-  //     }
-
-  //     setAccessToken(data.accessToken);
-  //     setRefreshToken(data.refreshToken);
-
-  //     if (data.isFirstLogin) {
-  //       navigate("/profile", { replace: true });
-  //     } else {
-  //       navigate("/", { replace: true });
-  //     }
+  function onClose() {
+    setIsDuplicateLogin(false);
+  }
   //   } catch (error) {
   //     alert("로그인 정보를 다시 확인해 주세요");
   //     emailRef.current?.focus();
   //     setPassword("");
   //   }
-
-  function handleDuplicateConfirm() {
-    if (!loginData) return;
-
-    deleteToken();
-    setAccessToken(loginData.accessToken);
-    setRefreshToken(loginData.refreshToken);
-
-    if (loginData.isFirstLogin) {
-      navigate("/profile", { replace: true });
-    } else {
-      navigate("/", { replace: true });
-    }
-
-    setIsDuplicateLogin(false);
-    setLoginData(null);
-  }
 
   return (
     <div
@@ -213,9 +177,7 @@ export default function SignInPage() {
           </button>
         </div>
       </div>
-      {isDuplicateLogin && (
-        <DuplicatedModal handleConfirm={() => handleDuplicateConfirm()} />
-      )}
+      {isDuplicateLogin && <DuplicatedModal close={onClose} />}
     </div>
   );
 }

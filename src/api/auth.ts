@@ -80,21 +80,16 @@ export async function fetchWithAuth(url: string, method: string) {
 }
 
 export async function logout() {
-  try {
-    const accessToken = getAccessToken();
-    if (!accessToken) throw new Error("로그인 상태가 아님");
+  const accessToken = getAccessToken();
+  if (!accessToken) throw new Error("로그인 상태가 아님");
 
-    const response = await fetch("https://devtime.prokit.app/api/auth/logout", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-    if (!response.ok) throw new Error("로그아웃 실패");
-    deleteToken();
+  const response = await fetch("https://devtime.prokit.app/api/auth/logout", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  if (!response.ok) throw new Error("로그아웃 실패");
 
-    window.location.href = "/sign-in";
-  } catch (error) {
-    console.log(error);
-  }
+  return;
 }
