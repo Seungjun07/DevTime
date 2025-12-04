@@ -5,13 +5,51 @@ import { getAccessToken } from "../utils/token";
 import { type MyProfile, type TechStack } from "../types";
 import { useProfileData } from "../hooks/queries/use-profile-data";
 import { useCreateTechStack } from "../hooks/mutations/tech-stacks/use-create-tech-stacks";
+import CareerSelect from "../components/form/career-select";
+import { useUpdateProfile } from "../hooks/mutations/profile/use-update-profile";
 
 export default function ProfileEditPage() {
-  const { data: profile, isLoading } = useProfileData();
+  const { data: profile, isLoading: isProfileLoading } = useProfileData();
 
+  const [profileForm, setProfileForm] = useState({
+    career: "",
+    purpose: "",
+    goal: "",
+    techStacks: [] as string[], // 이름 배열
+    profileImage: "", // key가 아직 없으면 빈 문자열
+  });
   const [keyword, setKeyword] = useState<string>("");
   const [suggestions, setSuggestions] = useState<TechStack[]>([]);
   const [selectedTechStacks, setSelectedTechStacks] = useState<TechStack[]>([]);
+
+  const { mutate: updateProfile, isPending: isUpdateProfilePending } =
+    useUpdateProfile({
+      onSuccess: () => {
+        alert("저장 완료");
+      },
+    });
+
+  useEffect(() => {
+    if (!profile) return;
+
+    setProfileForm({
+      career: profile.profile!.career,
+      purpose: profile.profile!.purpose,
+      goal: profile.profile!.goal,
+      techStacks: profile.profile?.techStacks ?? [],
+      profileImage: profile.profile!.profileImage,
+    });
+  }, [profile]);
+
+  function handleSave() {
+    updateProfile({
+      career: profileForm.career,
+      purpose: profileForm.purpose,
+      goal: profileForm.goal,
+      techStacks: profileForm.techStacks,
+      profileImage: profileForm.profileImage,
+    });
+  }
 
   useEffect(() => {
     if (!keyword) {
@@ -50,13 +88,14 @@ export default function ProfileEditPage() {
     return () => clearTimeout(delayDebounce);
   }, [keyword]);
 
-  const { mutate: createTechStack, isPending } = useCreateTechStack({
-    onSuccess: (newStack) => {
-      setSelectedTechStacks((prev) => [...prev, newStack]);
-      setKeyword("");
-      setSuggestions([]);
-    },
-  });
+  const { mutate: createTechStack, isPending: isCreateTechStackPending } =
+    useCreateTechStack({
+      onSuccess: (newStack) => {
+        setSelectedTechStacks((prev) => [...prev, newStack]);
+        setKeyword("");
+        setSuggestions([]);
+      },
+    });
 
   function handleCreateClick() {
     createTechStack(keyword);
@@ -97,9 +136,11 @@ export default function ProfileEditPage() {
     setSelectedTechStacks((prev) => prev.filter((stack) => stack.id !== id));
   }
 
+  if (isProfileLoading) return <div>로딩 중...</div>;
+
   return (
     <div className="flex flex-col gap-9 rounded-xl bg-white p-9">
-      <ProfileImage preview={preview} />
+      <ProfileImage defaultImage={preview} />
 
       <div className="flex gap-18">
         <div className="flex flex-1 flex-col gap-6">
@@ -201,27 +242,12 @@ export default function ProfileEditPage() {
 
         {/* 오른쪽 박스 */}
         <div className="flex flex-1 flex-col gap-6">
-          <div className="flex w-full flex-col gap-2">
-            <label
-              htmlFor="developCareer"
-              className="text-[14px] leading-[18px] font-medium text-gray-600"
-            >
-              개발 경력
-            </label>
-            <div>
-              <select
-                id="developCareer"
-                className="placeholder-custom h-11 w-full rounded bg-gray-50 px-4 py-3"
-              >
-                <option value={""}>개발 경력을 선택해 주세요.</option>
-                <option value={""}>경력 없음</option>
-                <option value={""}>0-3년</option>
-                <option value={""}>4-7년</option>
-                <option value={""}>8-10년</option>
-                <option value={""}>11년 이상</option>
-              </select>
-            </div>
-          </div>
+          <CareerSelect
+            value={profileForm.career}
+            onChange={(value) =>
+              setProfileForm((prev) => ({ ...prev, career: value }))
+            }
+          />
 
           <div>
             <label
@@ -274,7 +300,10 @@ export default function ProfileEditPage() {
         <button className="text-primary-blue h-12 rounded bg-gray-50 px-4 py-3 text-[18px] leading-[22px] font-semibold">
           취소
         </button>
-        <button className="bg-disabled-400 text-disabled-300 h-12 rounded px-4 py-3 text-[18px] leading-[22px] font-semibold">
+        <button
+          onClick={handleSave}
+          className="bg-disabled-400 text-disabled-300 h-12 rounded px-4 py-3 text-[18px] leading-[22px] font-semibold"
+        >
           변경 사항 저장하기
         </button>
       </div>

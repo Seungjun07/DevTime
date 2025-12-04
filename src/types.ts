@@ -43,6 +43,14 @@ export interface MyProfile {
   };
 }
 
+export interface ProfileForm {
+  career: string;
+  goal: string;
+  profileImage: string;
+  purpose: string;
+  techStacks: string[];
+}
+
 export interface SplitTime {
   date: string;
   timeSpent: number;

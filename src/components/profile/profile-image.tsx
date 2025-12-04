@@ -1,11 +1,39 @@
-import type { ChangeEvent } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 
 type Props = {
-  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  preview?: string | null;
+  defaultImage?: string;
+  onFileSelect: (file: File | null) => void;
 };
 
-export default function ProfileImage({ onChange, preview }: Props) {
+export default function ProfileImage({ defaultImage, onFileSelect }: Props) {
+  const [preview, setPreview] = useState<string | null>(defaultImage || null);
+
+  useEffect(() => {
+    if (defaultImage) setPreview(defaultImage);
+  }, [defaultImage]);
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+
+    const selectedFile = e.target.files[0];
+
+    if (!["image/png", "image/jpeg"].includes(selectedFile.type)) {
+      alert("png 또는 jpg 파일만 업로드 가능합니다.");
+      return;
+    }
+
+    if (selectedFile.size > 5 * 1024 * 1024) {
+      alert("5MB 이하 파일만 업로드 가능합니다.");
+      return;
+    }
+
+    onFileSelect(selectedFile);
+
+    const reader = new FileReader();
+    reader.onloadend = () => setPreview(reader.result as string);
+    reader.readAsDataURL(selectedFile);
+  };
+
   return (
     <div className="flex w-full flex-col gap-2">
       <p className="text-sm leading-[18px] font-medium text-gray-600">
@@ -16,7 +44,7 @@ export default function ProfileImage({ onChange, preview }: Props) {
           className={`border-primary-blue flex h-30 w-30 cursor-pointer items-center justify-center rounded-lg ${!preview && "border"} border-dashed bg-white`}
         >
           <input
-            onChange={onChange}
+            onChange={handleFileChange}
             type="file"
             accept=".png, .jpg, .jpeg"
             className="hidden"

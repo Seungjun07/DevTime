@@ -75,19 +75,22 @@ export default function MyPage() {
             <p className="text-disabled-400 text-[14px] leading-[18px] font-semibold">
               개발 스택
             </p>
-            {profile?.profile?.techStacks ? (
-              profile.profile.techStacks.map((stack) => (
-                <div key={stack} className="flex">
-                  <div className="rounded-[5px] bg-[#F0F2F5] px-2 py-1 text-[16px] leading-5 font-medium text-[#717887]">
+            <div className="flex w-full gap-2">
+              {profile?.profile?.techStacks ? (
+                profile.profile.techStacks.map((stack) => (
+                  <div
+                    key={stack}
+                    className="rounded-[5px] bg-[#F0F2F5] px-2 py-1 text-[16px] leading-5 font-medium text-[#717887]"
+                  >
                     {stack}
                   </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-disabled-300 text-[18px] leading-[22px] font-semibold">
-                현재 공부 중인 또는 가지고 있는 개발 스택을 업데이트 해주세요.
-              </p>
-            )}
+                ))
+              ) : (
+                <p className="text-disabled-300 text-[18px] leading-[22px] font-semibold">
+                  현재 공부 중인 또는 가지고 있는 개발 스택을 업데이트 해주세요.
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>
