@@ -52,6 +52,16 @@ export const useAuthStore = create(
           isLogin: false,
         });
       },
+      checkLogin: () => {
+        if (!accessToken) {
+          deleteToken();
+          set({
+            accessToken: null,
+            refreshToken: null,
+            isLogin: false,
+          });
+        }
+      },
     },
   })),
 );

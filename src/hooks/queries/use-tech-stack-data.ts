@@ -5,5 +5,6 @@ export function useTechStack(debouncedKeyword: string) {
   return useQuery({
     queryKey: ["tech-stack", debouncedKeyword],
     queryFn: () => fetchTechStacks(debouncedKeyword),
+    retry: 0,
   });
 }

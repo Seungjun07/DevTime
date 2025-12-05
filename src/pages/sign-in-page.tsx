@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import DuplicatedModal from "../components/modal/duplicated-modal";
 import { useSignIn } from "../hooks/mutations/auth/use-sign-in";
 import { useAuthStore } from "../store/auth";
+import { type LoginData } from "../types";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -57,11 +58,13 @@ export default function SignInPage() {
   //   return newErrors;
   // }
   const [isDuplicateLogin, setIsDuplicateLogin] = useState(false);
+  const [loginData, setLoginData] = useState<LoginData | null>(null);
   const setTokens = useAuthStore((state) => state.actions.setTokens);
 
   const { mutate: signIn, isPending } = useSignIn({
     onSuccess: (data) => {
       if (data.isDuplicateLogin) {
+        setLoginData(data);
         setIsDuplicateLogin(true);
         return;
       }
@@ -91,8 +94,8 @@ export default function SignInPage() {
     signIn({ email, password });
   }
 
-  function onClose() {
-    setIsDuplicateLogin(false);
+  function onConfirm(data: LoginData) {
+    setTokens(data);
   }
   //   } catch (error) {
   //     alert("로그인 정보를 다시 확인해 주세요");
@@ -177,7 +180,15 @@ export default function SignInPage() {
           </button>
         </div>
       </div>
-      {isDuplicateLogin && <DuplicatedModal close={onClose} />}
+      {isDuplicateLogin && loginData && (
+        <DuplicatedModal
+          close={() => {
+            onConfirm(loginData);
+            setIsDuplicateLogin(false);
+            setLoginData(null);
+          }}
+        />
+      )}
     </div>
   );
 }

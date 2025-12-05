@@ -2,23 +2,31 @@ import { Link, Outlet, useNavigate } from "react-router-dom";
 import logo from "./../assets/logo.svg";
 import Profile from "../components/profile";
 import { useAuthStore } from "../store/auth";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SignInAlertModal from "../components/modal/sign-in-alert-modal";
 export default function GlobalLayout() {
   const isLogin = useAuthStore((state) => state.isLogin);
+  const checkLogin = useAuthStore((state) => state.actions.checkLogin);
+
   const navigate = useNavigate();
   const [openModal, setOpenModal] = useState(false);
+
   function handleNavClick(path: string) {
     if (!isLogin) {
       setOpenModal(true);
-    } else {
-      navigate(path);
+      return;
     }
+
+    navigate(path);
   }
 
-  function onClose() {
+  function handleModalClose() {
     setOpenModal(false);
   }
+
+  useEffect(() => {
+    checkLogin();
+  }, []);
 
   return (
     <div className="flex min-h-screen flex-col bg-linear-to-br from-[rgba(246,247,249,1)] from-0% to-[rgba(233,236,245,1)] to-100%">
@@ -40,10 +48,7 @@ export default function GlobalLayout() {
             >
               랭킹
             </button>
-            {openModal && <SignInAlertModal close={onClose} />}
-
-            {/* <Link to={"/dashboard"}>대시보드</Link>
-            <Link to={"/ranking"}>랭킹</Link> */}
+            {openModal && <SignInAlertModal close={handleModalClose} />}
           </div>
         </div>
 

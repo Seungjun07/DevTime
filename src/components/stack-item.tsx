@@ -19,7 +19,7 @@ export default function StackItem({
             {techStack.name}
             <img
               onClick={() => deleteStack(techStack.id)}
-              className="h-5 w-5"
+              className="h-5 w-5 cursor-pointer"
               src={deleteIcon}
             />
           </div>

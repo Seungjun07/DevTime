@@ -8,8 +8,6 @@ export default function Profile() {
   const [isClicked, setIsClicked] = useState(false);
 
   // const [profile, setProfile] = useState<MyProfile>();
-  const accessToken = getAccessToken();
-
   async function refreshAccessToken() {
     try {
       const response = await fetch(
