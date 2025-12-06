@@ -1,7 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
 import logo from "./../assets/logo-vertical.svg";
 import Button from "../components/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useCheckNickname } from "../hooks/queries/use-check-nickname";
 
 type FormErrors = {
   email?: string;
@@ -121,24 +122,17 @@ export default function SignUpPage() {
     }
   }
 
+  const {
+    // data: nickNameChecked,
+    isLoading,
+    refetch,
+  } = useCheckNickname(form.nickname);
+
   async function handleCheckNickname() {
-    try {
-      const response = await fetch(
-        `https://devtime.prokit.app/api/signup/check-nickname?nickname=${encodeURIComponent(form.nickname)}`,
-      );
-
-      if (!response.ok) throw new Error("닉네임 중복 검사 실패");
-      const data = await response.json();
-
-      console.log(data);
-      setIsNicknameChecked({
-        available: data.available,
-        message: data.message,
-      });
-    } catch (error) {
-      console.log(error);
-    }
+    const { data } = await refetch();
+    setIsNicknameChecked(data);
   }
+
   return (
     <div className="m-auto flex h-[790px] w-[420px] flex-1 flex-col items-center gap-10">
       <div className="text-primary-blue text-2xl leading-[30px] font-bold">
@@ -197,11 +191,13 @@ export default function SignUpPage() {
               {errors.nickname}
             </p>
           )}
-          {isNicknameChecked.available && (
-            <p className="pt-2 text-[12px] leading-4 font-medium text-green-500">
+          {
+            <p
+              className={`pt-2 text-[12px] leading-4 font-medium ${isNicknameChecked.available ? "text-green-500" : "text-red-500"}`}
+            >
               {isNicknameChecked.message}
             </p>
-          )}
+          }
         </div>
       </div>
 

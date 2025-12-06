@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import SignInAlertModal from "../components/modal/sign-in-alert-modal";
 export default function GlobalLayout() {
   const isLogin = useAuthStore((state) => state.isLogin);
-  const checkLogin = useAuthStore((state) => state.actions.checkLogin);
 
   const navigate = useNavigate();
   const [openModal, setOpenModal] = useState(false);
@@ -23,10 +22,6 @@ export default function GlobalLayout() {
   function handleModalClose() {
     setOpenModal(false);
   }
-
-  useEffect(() => {
-    checkLogin();
-  }, []);
 
   return (
     <div className="flex min-h-screen flex-col bg-linear-to-br from-[rgba(246,247,249,1)] from-0% to-[rgba(233,236,245,1)] to-100%">

@@ -31,26 +31,6 @@ export interface TechStack {
   updatedAt?: string;
 }
 
-export interface MyProfile {
-  email: string;
-  nickname: string;
-  profile?: {
-    career: string;
-    goal: string;
-    profileImage: string;
-    purpose: string;
-    techStacks: string[];
-  };
-}
-
-export interface ProfileForm {
-  career: string;
-  goal: string;
-  profileImage: string;
-  purpose: string;
-  techStacks: string[];
-}
-
 export interface SplitTime {
   date: string;
   timeSpent: number;
@@ -72,3 +52,36 @@ export interface TaskResponse {
 }
 
 export type TaskModalType = "CREATE" | "EDIT" | "FINISH" | "UPDATE";
+
+export interface MyProfile {
+  email: string;
+  nickname: string;
+  profile?: {
+    career: string;
+    goal: string;
+    profileImage: string;
+    purpose: Purpose;
+    techStacks: string[];
+  };
+}
+export type PurposeEnum =
+  | "취업 준비"
+  | "이직 준비"
+  | "단순 개발 역량 향상"
+  | "회사 내 프로젝트 원활하게 수행";
+
+type PurposeObject = {
+  type: "기타";
+  detail: string;
+};
+
+export type Purpose = PurposeEnum | PurposeObject;
+
+export interface ProfileForm {
+  nickname: string;
+  career: string;
+  goal: string;
+  profileImage: string;
+  purpose: Purpose;
+  techStacks: string[];
+}

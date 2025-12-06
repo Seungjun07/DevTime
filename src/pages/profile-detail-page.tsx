@@ -3,7 +3,7 @@ import StackItem from "../components/stack-item";
 import { useState, type ChangeEvent } from "react";
 import ProfileImage from "../components/profile/profile-image";
 import { getAccessToken } from "../utils/token";
-import type { TechStack } from "../types";
+import { type PurposeEnum, type Purpose, type TechStack } from "../types";
 import { useCreateTechStack } from "../hooks/mutations/tech-stacks/use-create-tech-stacks";
 import ProfileTechStack from "../components/profile/profile-tech-stack";
 import CareerSelect from "../components/form/career-select";
@@ -23,6 +23,9 @@ export default function ProfileDetailPage() {
     goal: "",
     profileImage: "",
   });
+
+  const [purposeSelect, setPurposeSelect] = useState("");
+  const [purposeDetail, setPurposeDetail] = useState("");
 
   const [keyword, setKeyword] = useState<string>("");
   const [selectedTechStacks, setSelectedTechStacks] = useState<TechStack[]>([]);
@@ -70,13 +73,21 @@ export default function ProfileDetailPage() {
     }
     setUploading(true);
     try {
+      let purpose: Purpose;
+
+      if (purposeSelect === "기타") {
+        purpose = { type: "기타", detail: purposeDetail };
+      } else {
+        purpose = purposeSelect as PurposeEnum;
+      }
+
       const { presignedUrl, key } = await getPresignedUrl(file);
 
       await uploadToS3(file, presignedUrl);
 
       await createProfile({
         career: profileForm.career || "",
-        purpose: profileForm.purpose || "",
+        purpose: purpose,
         goal: profileForm.goal || "",
         techStacks: selectedTechStacks.map((stack) => stack.name), // 이름 배열
         profileImage: key || "",
@@ -106,10 +117,10 @@ export default function ProfileDetailPage() {
         className="w-105"
       />
       <StudyPurPoseSelect
-        value={profileForm.purpose}
-        onChange={(value) =>
-          setProfileForm((prev) => ({ ...prev, purpose: value }))
-        }
+        selectValue={purposeSelect}
+        detailValue={purposeDetail}
+        onSelectChange={(value) => setPurposeSelect(value)}
+        onDetailChange={(value) => setPurposeDetail(value)}
         className="w-105"
       />
 
@@ -142,6 +153,7 @@ export default function ProfileDetailPage() {
 
       <button
         onClick={handleSave}
+        disabled={disabled}
         className={`${disabled ? "bg-disabled-400 text-disabled-300" : "bg-primary-blue text-white"} h-12 w-105 cursor-pointer rounded px-4 py-3 text-lg leading-[22px] font-semibold`}
       >
         {uploading ? "업로드 중..." : "저장하기"}

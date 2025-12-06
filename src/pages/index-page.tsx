@@ -27,6 +27,13 @@ export default function IndexPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const isLogin = useAuthStore((state) => state.isLogin);
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const logout = useAuthStore((state) => state.actions.logout);
+  useEffect(() => {
+    if (!accessToken) {
+      logout();
+    }
+  }, []);
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   function handleStartTimerClick() {
@@ -54,33 +61,32 @@ export default function IndexPage() {
     resetTimer();
   }
 
-  const accessToken = getAccessToken();
   const {
     data: profile,
     isLoading: isProfileLoading,
     error: profileError,
   } = useProfileData();
 
-  async function refreshAccessToken() {
-    try {
-      const response = await fetch(
-        "https://devtime.prokit.app/api/auth/refresh",
-        {
-          method: "POST",
-          credentials: "include",
-        },
-      );
+  // async function refreshAccessToken() {
+  //   try {
+  //     const response = await fetch(
+  //       "https://devtime.prokit.app/api/auth/refresh",
+  //       {
+  //         method: "POST",
+  //         credentials: "include",
+  //       },
+  //     );
 
-      if (!response.ok) return false;
+  //     if (!response.ok) return false;
 
-      const data = await response.json();
-      localStorage.setItem("accessToken", data.accessToken);
-      return true;
-    } catch (error) {
-      console.log(error);
-      return false;
-    }
-  }
+  //     const data = await response.json();
+  //     localStorage.setItem("accessToken", data.accessToken);
+  //     return true;
+  //   } catch (error) {
+  //     console.log(error);
+  //     return false;
+  //   }
+  // }
 
   async function fetchTimer() {
     setIsLoading(true);

@@ -1,26 +1,37 @@
 import { useEffect, useState } from "react";
 import ProfileImage from "../components/profile/profile-image";
 import StackItem from "../components/stack-item";
-import { getAccessToken } from "../utils/token";
-import { type MyProfile, type TechStack } from "../types";
+import {
+  type MyProfile,
+  type Purpose,
+  type PurposeEnum,
+  type TechStack,
+} from "../types";
 import { useProfileData } from "../hooks/queries/use-profile-data";
 import { useCreateTechStack } from "../hooks/mutations/tech-stacks/use-create-tech-stacks";
 import CareerSelect from "../components/form/career-select";
 import { useUpdateProfile } from "../hooks/mutations/profile/use-update-profile";
+import StudyPurPoseSelect from "../components/form/study-purpose-select";
+import StudyGoalInput from "../components/form/study-goal-input";
+import ProfileTechStack from "../components/profile/profile-tech-stack";
+import { useDebounce } from "../hooks/use-debounce";
+import { useTechStack } from "../hooks/queries/use-tech-stack-data";
+import { useCheckNickname } from "../hooks/queries/use-check-nickname";
 
 export default function ProfileEditPage() {
   const { data: profile, isLoading: isProfileLoading } = useProfileData();
 
   const [profileForm, setProfileForm] = useState({
+    nickname: "",
     career: "",
-    purpose: "",
+    purpose: null,
     goal: "",
     techStacks: [] as string[], // 이름 배열
     profileImage: "", // key가 아직 없으면 빈 문자열
   });
-  const [keyword, setKeyword] = useState<string>("");
-  const [suggestions, setSuggestions] = useState<TechStack[]>([]);
-  const [selectedTechStacks, setSelectedTechStacks] = useState<TechStack[]>([]);
+
+  const [purposeSelect, setPurposeSelect] = useState("");
+  const [purposeDetail, setPurposeDetail] = useState("");
 
   const { mutate: updateProfile, isPending: isUpdateProfilePending } =
     useUpdateProfile({
@@ -32,103 +43,46 @@ export default function ProfileEditPage() {
   useEffect(() => {
     if (!profile) return;
 
+    const profilePurpose = profile.profile?.purpose;
+    if (typeof profilePurpose === "string") {
+      setPurposeSelect(profilePurpose);
+      setPurposeDetail("");
+    } else {
+      setPurposeSelect("기타");
+      setPurposeDetail(profilePurpose?.detail || "");
+    }
     setProfileForm({
-      career: profile.profile!.career,
-      purpose: profile.profile!.purpose,
-      goal: profile.profile!.goal,
-      techStacks: profile.profile?.techStacks ?? [],
-      profileImage: profile.profile!.profileImage,
+      nickname: profile.nickname,
+      career: profile?.profile?.career,
+      // purpose: purposeSelect,
+      goal: profile?.profile?.goal,
+      techStacks: profile?.profile?.techStacks ?? [],
+      profileImage: profile?.profile?.profileImage,
     });
   }, [profile]);
 
   function handleSave() {
+    let purpose: Purpose;
+
+    if (purposeSelect === "기타") {
+      purpose = { type: "기타", detail: purposeDetail };
+    } else {
+      purpose = purposeSelect as PurposeEnum;
+    }
+
     updateProfile({
+      nickname: profileForm.nickname,
       career: profileForm.career,
-      purpose: profileForm.purpose,
+      purpose: purpose,
       goal: profileForm.goal,
       techStacks: profileForm.techStacks,
       profileImage: profileForm.profileImage,
     });
   }
 
-  useEffect(() => {
-    if (!keyword) {
-      setSuggestions([]);
-      return;
-    }
-
-    const delayDebounce = setTimeout(async () => {
-      try {
-        const accessToken = getAccessToken();
-
-        if (!accessToken) {
-          console.log("로그인 필요");
-          return;
-        }
-        const response = await fetch(
-          `https://devtime.prokit.app/api/tech-stacks?keyword=${keyword}`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          },
-        );
-
-        if (!response.ok) throw new Error("기술 스택 불러오기 실패");
-        const data = await response.json();
-
-        setSuggestions(data.results || []);
-
-        console.log(suggestions);
-      } catch (error) {
-        console.log(error);
-      }
-    }, 300); // 0.3초 딜레이
-
-    return () => clearTimeout(delayDebounce);
-  }, [keyword]);
-
-  const { mutate: createTechStack, isPending: isCreateTechStackPending } =
-    useCreateTechStack({
-      onSuccess: (newStack) => {
-        setSelectedTechStacks((prev) => [...prev, newStack]);
-        setKeyword("");
-        setSuggestions([]);
-      },
-    });
-
   function handleCreateClick() {
     createTechStack(keyword);
   }
-  // async function createNewStack() {
-  //   try {
-  //     const accessToken = getAccessToken();
-
-  //     if (!accessToken) throw new Error("토큰 만료 - 로그인 실패");
-
-  //     console.log(typeof keyword);
-  //     const response = await fetch(
-  //       "https://devtime.prokit.app/api/tech-stacks",
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           Authorization: `Bearer ${accessToken}`,
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify({ name: keyword }),
-  //       },
-  //     );
-
-  //     if (!response.ok) throw new Error("기술 스택 생성 실패");
-  //     const data = await response.json();
-  //     console.log(data);
-  //     setSelectedTechStacks((prev) => [...prev, data.techStack]);
-  //     setKeyword("");
-  //     setSuggestions([]);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // }
 
   const preview = `https://dev-time-bucket.s3.ap-northeast-2.amazonaws.com/${profile?.profile?.profileImage}`;
 
@@ -136,6 +90,45 @@ export default function ProfileEditPage() {
     setSelectedTechStacks((prev) => prev.filter((stack) => stack.id !== id));
   }
 
+  const [keyword, setKeyword] = useState<string>("");
+  const [selectedTechStacks, setSelectedTechStacks] = useState<TechStack[]>([]);
+
+  const debouncedKeyword = useDebounce(keyword);
+  const { data: suggestions = [] } = useTechStack(debouncedKeyword);
+
+  const { mutate: createTechStack, isPending } = useCreateTechStack({
+    onSuccess: (newStack) => {
+      setSelectedTechStacks((prev) => [...prev, newStack]);
+      setKeyword("");
+    },
+  });
+
+  function addStack(stack: TechStack) {
+    const exists = selectedTechStacks.some((item) => item.id === stack.id);
+
+    if (!exists) {
+      setSelectedTechStacks((prev) => [...prev, stack]);
+    }
+
+    setKeyword("");
+  }
+
+  const [isNicknameChecked, setIsNicknameChecked] = useState({
+    available: false,
+    message: "",
+  });
+
+  const {
+    // data: checkedNickname,
+    isLoading,
+    refetch,
+  } = useCheckNickname(profileForm.nickname);
+
+  async function handleCheckNickname() {
+    const { data } = await refetch();
+
+    setIsNicknameChecked(data);
+  }
   if (isProfileLoading) return <div>로딩 중...</div>;
 
   return (
@@ -155,45 +148,31 @@ export default function ProfileEditPage() {
             <div className="flex gap-3">
               <input
                 id="nickname"
+                onChange={(e) =>
+                  setProfileForm((prev) => ({
+                    ...prev,
+                    nickname: e.target.value,
+                  }))
+                }
                 className="h-11 flex-1 rounded-sm bg-gray-50 px-4 py-3 text-[16px] leading-5 font-medium placeholder:text-gray-600"
-                placeholder={profile?.nickname}
+                placeholder={profileForm.nickname}
               />
-              <button className="bg-disabled-200 text-disabled-400 h-11 px-4 py-3 text-sm leading-[18px] font-semibold">
+              <button
+                onClick={handleCheckNickname}
+                className="bg-disabled-200 text-disabled-400 h-11 px-4 py-3 text-sm leading-[18px] font-semibold"
+              >
                 중복 확인
               </button>
             </div>
-            <p>이메일 형식</p>
+            {<p>{isNicknameChecked.message}</p>}
           </div>
 
-          <div className="mb-6 h-[70px]">
-            <label
-              htmlFor="studyPurpose"
-              className="text-sm leading-[18px] font-medium text-gray-600"
-            >
-              공부 목적
-            </label>
-            <div>
-              <select
-                id="studyPurpose"
-                className="placeholder-custom w-full rounded bg-gray-50 px-4 py-3"
-              >
-                <option value={""}>공부의 목적을 선택해 주세요.</option>
-                <option value={"취업 준비"}>취업 준비</option>
-                <option value={"이직 준비"}>이직 준비</option>
-                <option value={"단순 개발 역량 향상"}>
-                  단순 개발 역량 향상
-                </option>
-                <option value={"회사 내 프로젝트 원활하게 수행"}>
-                  회사 내 프로젝트 원활하게 수행
-                </option>
-                <option value={"기타"}>기타(직접 입력)</option>
-              </select>
-              <input
-                className="placeholder-custom w-full rounded bg-gray-50 px-4 py-3"
-                placeholder="기타 "
-              />
-            </div>
-          </div>
+          <StudyPurPoseSelect
+            selectValue={purposeSelect}
+            detailValue={purposeDetail}
+            onSelectChange={(value) => setPurposeSelect(value)}
+            onDetailChange={(value) => setPurposeDetail(value)}
+          />
 
           <div className="h-[70px]">
             <label
@@ -249,42 +228,21 @@ export default function ProfileEditPage() {
             }
           />
 
-          <div>
-            <label
-              htmlFor="studyGoal"
-              className="text-[14px] leading-[18px] font-medium text-gray-600"
-            >
-              공부 목표
-            </label>
-            <div>
-              <input
-                id="studyGoal"
-                className="placeholder-custom w-full rounded bg-gray-50 px-4 py-3"
-                placeholder={
-                  profile?.profile?.purpose
-                    ? `${profile?.profile.purpose}`
-                    : "공부 목표를 입력해 주세요."
-                }
-              />
-            </div>
-          </div>
+          <StudyGoalInput
+            value={profileForm.goal}
+            onChange={(value) =>
+              setProfileForm((prev) => ({ ...prev, goal: value }))
+            }
+          />
 
           <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor="studyStack"
-                className="text-[14px] leading-[18px] font-medium text-gray-600"
-              >
-                공부/사용 중인 기술 스택(선택)
-              </label>
-              <div>
-                <input
-                  id="studyStack"
-                  className="placeholder-custom w-full rounded bg-gray-50 px-4 py-3"
-                  placeholder="기술 스택을 검색해 등록해 주세요."
-                />
-              </div>
-            </div>
+            <ProfileTechStack
+              value={keyword}
+              onChange={(value) => setKeyword(value)}
+              onAdd={(value) => addStack(value)}
+              onCreate={handleCreateClick}
+              suggestions={suggestions}
+            />
 
             <div className="flex flex-wrap gap-2">
               <StackItem

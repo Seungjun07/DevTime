@@ -1,28 +1,18 @@
-import { useState } from "react";
-
 interface StudyPurposeProps {
-  value: string;
-  onChange: (value: string) => void;
+  selectValue: string;
+  detailValue: string;
+  onSelectChange: (value: string) => void;
+  onDetailChange: (value: string) => void;
   className?: string;
 }
 
 export default function StudyPurPoseSelect({
-  value,
-  onChange,
+  selectValue,
+  detailValue,
+  onSelectChange,
+  onDetailChange,
   className,
 }: StudyPurposeProps) {
-  const [isCustom, setIsCustom] = useState(false);
-
-  function handleSelectChange(selected: string) {
-    if (selected === "기타") {
-      setIsCustom(true);
-      onChange("");
-    } else {
-      setIsCustom(false);
-      onChange(selected);
-    }
-  }
-
   return (
     <div className="flex flex-col gap-2">
       <label
@@ -32,8 +22,8 @@ export default function StudyPurPoseSelect({
         공부 목적
       </label>
       <select
-        value={isCustom ? "기타" : value}
-        onChange={(e) => handleSelectChange(e.target.value)}
+        value={selectValue}
+        onChange={(e) => onSelectChange(e.target.value)}
         id="studyPurpose"
         className={`placeholder-custom ${className} rounded bg-gray-50 px-4 py-3`}
       >
@@ -46,12 +36,12 @@ export default function StudyPurPoseSelect({
         </option>
         <option value={"기타"}>기타(직접 입력)</option>
       </select>
-      {isCustom && (
+      {selectValue === "기타" && (
         <input
           className="placeholder-custom w-105 rounded bg-gray-50 px-4 py-3"
           placeholder="직접 입력"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
+          value={detailValue}
+          onChange={(e) => onDetailChange(e.target.value)}
         />
       )}
     </div>

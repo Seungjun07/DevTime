@@ -2,10 +2,22 @@ import editIcon from "./../assets/edit.png";
 import { Link } from "react-router-dom";
 import defaultAvartar from "./../assets/user.png";
 import { useProfileData } from "../hooks/queries/use-profile-data";
+import { useEffect, useState } from "react";
 
 export default function MyPage() {
   const { data: profile, isLoading, error } = useProfileData();
   const imageUrl = `https://dev-time-bucket.s3.ap-northeast-2.amazonaws.com/${profile?.profile?.profileImage}`;
+  const [purpose, setPurpose] = useState<string>("");
+
+  useEffect(() => {
+    const profilePurpose = profile?.profile?.purpose;
+
+    if (typeof profilePurpose === "string") {
+      setPurpose(profilePurpose);
+    } else {
+      setPurpose(profilePurpose?.detail);
+    }
+  }, [profile]);
 
   if (error) return <div>프로필 불러오기 실패</div>;
 
@@ -63,7 +75,7 @@ export default function MyPage() {
             </p>
             {profile?.profile?.purpose ? (
               <p className="text-[18px] leading-[22px] font-semibold text-[#4b5563]">
-                {profile.profile.purpose}
+                {purpose}
               </p>
             ) : (
               <p className="text-disabled-300 text-[18px] leading-[22px] font-semibold">

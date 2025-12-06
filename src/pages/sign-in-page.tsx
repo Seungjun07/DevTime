@@ -180,12 +180,11 @@ export default function SignInPage() {
           </button>
         </div>
       </div>
-      {isDuplicateLogin && loginData && (
+      {isDuplicateLogin && (
         <DuplicatedModal
           close={() => {
-            onConfirm(loginData);
+            onConfirm(loginData!);
             setIsDuplicateLogin(false);
-            setLoginData(null);
           }}
         />
       )}
