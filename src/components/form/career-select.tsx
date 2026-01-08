@@ -1,5 +1,3 @@
-import type { ChangeEvent } from "react";
-
 interface CareerSelectProps {
   value: string;
   onChange: (value: string) => void;
@@ -37,22 +35,4 @@ export default function CareerSelect({
       </select>
     </div>
   );
-}
-
-{
-  /* <div className="flex w-full flex-col gap-2">
-  <div>
-    <select
-      id="developCareer"
-      className="placeholder-custom h-11 w-full rounded bg-gray-50 px-4 py-3"
-    >
-      <option value={""}>개발 경력을 선택해 주세요.</option>
-      <option value={""}>경력 없음</option>
-      <option value={""}>0-3년</option>
-      <option value={""}>4-7년</option>
-      <option value={""}>8-10년</option>
-      <option value={""}>11년 이상</option>
-    </select>
-  </div>
-</div>; */
 }

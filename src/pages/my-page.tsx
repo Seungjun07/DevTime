@@ -3,10 +3,11 @@ import { Link } from "react-router-dom";
 import defaultAvartar from "./../assets/user.png";
 import { useProfileData } from "../hooks/queries/use-profile-data";
 import { useEffect, useState } from "react";
+import { IMAGE_URL } from "../constant";
 
 export default function MyPage() {
   const { data: profile, isLoading, error } = useProfileData();
-  const imageUrl = `https://dev-time-bucket.s3.ap-northeast-2.amazonaws.com/${profile?.profile?.profileImage}`;
+  const imageUrl = `${IMAGE_URL}/${profile?.profile?.profileImage}`;
   const [purpose, setPurpose] = useState<string>("");
 
   useEffect(() => {

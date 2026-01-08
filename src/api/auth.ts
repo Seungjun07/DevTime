@@ -1,4 +1,5 @@
 import type { LoginData } from "../types";
+import { API_BASE_URL } from "./api";
 import {
   deleteToken,
   getAccessToken,
@@ -13,7 +14,7 @@ export async function signIn({
   email: string;
   password: string;
 }) {
-  const response = await fetch(`https://devtime.prokit.app/api/auth/login`, {
+  const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -25,7 +26,6 @@ export async function signIn({
   if (!response.ok) throw new Error("로그인 실패");
 
   const data: LoginData = await response.json();
-  console.log(data);
   return data;
 }
 
@@ -47,18 +47,15 @@ export async function fetchWithAuth(url: string, method: string) {
       throw new Error("NOT_LOGGED_IN");
     }
 
-    const refreshResponse = await fetch(
-      "https://devtime.prokit.app/api/auth/refresh",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          refreshToken,
-        }),
+    const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        refreshToken,
+      }),
+    });
 
     if (!refreshResponse.ok) {
       deleteToken();
@@ -83,7 +80,7 @@ export async function logout() {
   const accessToken = getAccessToken();
   if (!accessToken) throw new Error("로그인 상태가 아님");
 
-  const response = await fetch("https://devtime.prokit.app/api/auth/logout", {
+  const response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${accessToken}`,

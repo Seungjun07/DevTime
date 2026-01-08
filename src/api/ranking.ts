@@ -1,5 +1,6 @@
 import type { RankingItem } from "../types";
 import { getAccessToken } from "../utils/token";
+import { API_BASE_URL } from "./api";
 
 interface RankingResponse {
   data: {
@@ -12,7 +13,7 @@ export async function fetchRanking(sortBy: string) {
 
   if (!accessToken) throw new Error("로그인 필요");
   const response = await fetch(
-    `https://devtime.prokit.app/api/rankings?sortBy=${sortBy}`,
+    `${API_BASE_URL}/api/rankings?sortBy=${sortBy}`,
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,

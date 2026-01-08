@@ -2,7 +2,6 @@ import { Link, useNavigate } from "react-router-dom";
 import StackItem from "../components/stack-item";
 import { useState, type ChangeEvent } from "react";
 import ProfileImage from "../components/profile/profile-image";
-import { getAccessToken } from "../utils/token";
 import { type PurposeEnum, type Purpose, type TechStack } from "../types";
 import { useCreateTechStack } from "../hooks/mutations/tech-stacks/use-create-tech-stacks";
 import ProfileTechStack from "../components/profile/profile-tech-stack";

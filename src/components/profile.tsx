@@ -1,33 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ProfilePopOver from "./profile-pop-over";
-import { deleteToken, getAccessToken } from "../utils/token";
-import type { MyProfile } from "../types";
 import { useProfileData } from "../hooks/queries/use-profile-data";
 
 export default function Profile() {
   const [isClicked, setIsClicked] = useState(false);
-
-  // const [profile, setProfile] = useState<MyProfile>();
-  async function refreshAccessToken() {
-    try {
-      const response = await fetch(
-        "https://devtime.prokit.app/api/auth/refresh",
-        {
-          method: "POST",
-          credentials: "include",
-        },
-      );
-
-      if (!response.ok) return false;
-
-      const data = await response.json();
-      localStorage.setItem("accessToken", data.accessToken);
-      return true;
-    } catch (error) {
-      console.log(error);
-      return false;
-    }
-  }
 
   const { data: profile, isLoading } = useProfileData();
 

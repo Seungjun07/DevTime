@@ -7,6 +7,7 @@ import doubleLeftIcon from "./../assets/2chevron-left.png";
 import leftIcon from "./../assets/chevron-left.png";
 import doubleRightIcon from "./../assets/2chevron-right.png";
 import rightIcon from "./../assets/chevron-right.png";
+import { API_BASE_URL } from "../api/api";
 
 export default function StudyRecord() {
   const [pagination, setPagination] = useState();
@@ -25,7 +26,7 @@ export default function StudyRecord() {
       if (!accessToken) throw new Error("로그인 필요");
 
       const response = await fetch(
-        `https://devtime.prokit.app/api/study-logs?page=${currentPage}&limit=${itemsPerpage}`,
+        `${API_BASE_URL}/api/study-logs?page=${currentPage}&limit=${itemsPerpage}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,

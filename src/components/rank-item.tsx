@@ -1,3 +1,4 @@
+import { IMAGE_URL } from "../constant";
 import type { RankingItem } from "../types";
 import defaultAvartar from "./../assets/Profile.png";
 
@@ -5,7 +6,7 @@ export default function RankItem(props: RankingItem) {
   const totalStudyTime = (props.totalStudyTime / 3600 / 1000).toFixed(0);
   const averageStudyTime = (props.averageStudyTime / 3600 / 1000).toFixed(1);
 
-  const profileImage = `https://dev-time-bucket.s3.ap-northeast-2.amazonaws.com/${props?.profile?.profileImage}`;
+  const profileImage = `${IMAGE_URL}/${props?.profile?.profileImage}`;
   return (
     <div className="flex gap-9 rounded-xl bg-white px-6 py-3">
       <div className="flex h-[126px] flex-col items-start gap-4">

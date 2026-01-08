@@ -1,11 +1,12 @@
 import { getAccessToken } from "../utils/token";
+import { API_BASE_URL } from "./api";
 
 export async function fetchTechStacks(keyword: string) {
   const accessToken = getAccessToken();
 
   if (!accessToken) throw new Error("로그인 필요");
   const response = await fetch(
-    `https://devtime.prokit.app/api/tech-stacks?keyword=${keyword}`,
+    `${API_BASE_URL}/api/tech-stacks?keyword=${keyword}`,
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,

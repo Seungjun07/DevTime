@@ -4,6 +4,7 @@ import { type SplitTime, type TaskModalType } from "../../../types";
 import { fetchTasksOnServer } from "../../../api/todos";
 import useTasks from "../../../hooks/use-tasks";
 import TaskList from "../../task/task-list";
+import { API_BASE_URL } from "../../../api/api";
 
 export default function StopTodosModal({
   onClose,
@@ -45,7 +46,7 @@ export default function StopTodosModal({
       if (!accessToken) throw new Error("로그인 필요");
 
       const response = await fetch(
-        `https://devtime.prokit.app/api/timers/${timerId}/stop`,
+        `${API_BASE_URL}/api/timers/${timerId}/stop`,
         {
           method: "POST",
           headers: {

@@ -18,6 +18,7 @@ import { useDeleteTimer } from "../hooks/mutations/timer/use-delete-timer";
 import { useProfileData } from "../hooks/queries/use-profile-data";
 import { useAuthStore } from "../store/auth";
 import SignInAlertModal from "../components/modal/sign-in-alert-modal";
+import { API_BASE_URL } from "../api/api";
 
 export default function IndexPage() {
   const [isCreateTodosModalOpen, setIsCreateTodosModalOpen] = useState(false);
@@ -67,27 +68,6 @@ export default function IndexPage() {
     error: profileError,
   } = useProfileData();
 
-  // async function refreshAccessToken() {
-  //   try {
-  //     const response = await fetch(
-  //       "https://devtime.prokit.app/api/auth/refresh",
-  //       {
-  //         method: "POST",
-  //         credentials: "include",
-  //       },
-  //     );
-
-  //     if (!response.ok) return false;
-
-  //     const data = await response.json();
-  //     localStorage.setItem("accessToken", data.accessToken);
-  //     return true;
-  //   } catch (error) {
-  //     console.log(error);
-  //     return false;
-  //   }
-  // }
-
   async function fetchTimer() {
     setIsLoading(true);
 
@@ -95,7 +75,7 @@ export default function IndexPage() {
       const accessToken = getAccessToken();
       if (!accessToken) throw new Error("로그인 필요");
 
-      const response = await fetch("https://devtime.prokit.app/api/timers", {
+      const response = await fetch(`${API_BASE_URL}/api/timers`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
@@ -110,7 +90,6 @@ export default function IndexPage() {
       }
 
       const data = await response.json();
-      console.log("현재 타이머", data);
 
       setSplitTimes(data.splitTimes || []);
 
@@ -152,25 +131,21 @@ export default function IndexPage() {
       const accessToken = getAccessToken();
       if (!accessToken) throw new Error("로그인 필요");
 
-      const response = await fetch(
-        `https://devtime.prokit.app/api/timers/${timerId}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            timerId,
-            splitTimes,
-          }),
+      const response = await fetch(`${API_BASE_URL}/api/timers/${timerId}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({
+          timerId,
+          splitTimes,
+        }),
+      });
 
       if (!response.ok) throw new Error("타이머 불러오기 실패");
 
-      const data = await response.json();
-      console.log("일시정지 타이머", data);
+      // const data = await response.json();
     } catch (error) {
       console.log(error);
     }

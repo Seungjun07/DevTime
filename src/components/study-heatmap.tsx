@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import HeatMap from "@uiw/react-heat-map";
 import { getAccessToken } from "../utils/token";
+import { API_BASE_URL } from "../api/api";
 
 export default function StudyHeatmap() {
   const [heatmapData, setHeatmapData] = useState([]);
@@ -20,7 +21,7 @@ export default function StudyHeatmap() {
       const accessToken = getAccessToken();
       if (!accessToken) throw new Error("로그인 필요");
 
-      const response = await fetch("https://devtime.prokit.app/api/heatmap", {
+      const response = await fetch(`${API_BASE_URL}/api/heatmap`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

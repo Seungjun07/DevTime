@@ -1,12 +1,7 @@
 import { useEffect, useState } from "react";
 import ProfileImage from "../components/profile/profile-image";
 import StackItem from "../components/stack-item";
-import {
-  type MyProfile,
-  type Purpose,
-  type PurposeEnum,
-  type TechStack,
-} from "../types";
+import { type Purpose, type PurposeEnum, type TechStack } from "../types";
 import { useProfileData } from "../hooks/queries/use-profile-data";
 import { useCreateTechStack } from "../hooks/mutations/tech-stacks/use-create-tech-stacks";
 import CareerSelect from "../components/form/career-select";
@@ -17,6 +12,7 @@ import ProfileTechStack from "../components/profile/profile-tech-stack";
 import { useDebounce } from "../hooks/use-debounce";
 import { useTechStack } from "../hooks/queries/use-tech-stack-data";
 import { useCheckNickname } from "../hooks/queries/use-check-nickname";
+import { IMAGE_URL } from "../constant";
 
 export default function ProfileEditPage() {
   const { data: profile, isLoading: isProfileLoading } = useProfileData();
@@ -84,7 +80,7 @@ export default function ProfileEditPage() {
     createTechStack(keyword);
   }
 
-  const preview = `https://dev-time-bucket.s3.ap-northeast-2.amazonaws.com/${profile?.profile?.profileImage}`;
+  const preview = `${IMAGE_URL}/${profile?.profile?.profileImage}`;
 
   function deleteStack(id: string) {
     setSelectedTechStacks((prev) => prev.filter((stack) => stack.id !== id));

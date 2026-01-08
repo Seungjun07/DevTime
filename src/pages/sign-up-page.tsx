@@ -3,6 +3,7 @@ import logo from "./../assets/logo-vertical.svg";
 import Button from "../components/button";
 import { useEffect, useState } from "react";
 import { useCheckNickname } from "../hooks/queries/use-check-nickname";
+import { API_BASE_URL } from "../api/api";
 
 type FormErrors = {
   email?: string;
@@ -90,7 +91,7 @@ export default function SignUpPage() {
     }
 
     try {
-      const response = await fetch(`https://devtime.prokit.app/api/signup`, {
+      const response = await fetch(`${API_BASE_URL}/api/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -109,13 +110,12 @@ export default function SignUpPage() {
   async function handleCheckEmail() {
     try {
       const response = await fetch(
-        `https://devtime.prokit.app/api/signup/check-email?email=${encodeURIComponent(form.email)}`,
+        `${API_BASE_URL}/api/signup/check-email?email=${encodeURIComponent(form.email)}`,
       );
 
       if (!response.ok) throw new Error("이메일 중복 검사 실패");
       const data = await response.json();
 
-      console.log(data);
       setIsEmailChecked({ available: data.available, message: data.message });
     } catch (error) {
       console.log("에러", error);

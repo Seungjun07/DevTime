@@ -3,13 +3,14 @@ import StudyRecord from "../components/study-record";
 import { getAccessToken } from "../utils/token";
 import WeekdayStudyAverage from "../components/weekday-study-average";
 import { useQuery } from "@tanstack/react-query";
+import { API_BASE_URL } from "../api/api";
 
 async function getMyStudyInfo() {
   try {
     const accessToken = getAccessToken();
     if (!accessToken) throw new Error("로그인 필요");
 
-    const response = await fetch("https://devtime.prokit.app/api/stats", {
+    const response = await fetch(`${API_BASE_URL}/api/stats`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },

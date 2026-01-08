@@ -1,7 +1,6 @@
 import userIcon from "./../assets/user.png";
 import logoutIcon from "./../assets/logout.png";
 import { Link, useNavigate } from "react-router-dom";
-import { deleteToken, getAccessToken } from "../utils/token";
 import { useAuthStore } from "../store/auth";
 
 export default function ProfilePopOver({ onClick }: { onClick: () => void }) {

@@ -2,13 +2,7 @@ import tagIcon from "./../assets/tag.png";
 import editIcon from "./../assets/edit.png";
 import trashIcon from "./../assets/trash.png";
 import checkIcon from "./../assets/check.png";
-import {
-  useEffect,
-  useRef,
-  useState,
-  type ChangeEvent,
-  type EventHandler,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 
 type TodosModalType = "CREATE" | "EDIT" | "FINISH" | "UPDATE";
 
