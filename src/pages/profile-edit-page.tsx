@@ -47,14 +47,15 @@ export default function ProfileEditPage() {
       setPurposeSelect("기타");
       setPurposeDetail(profilePurpose?.detail || "");
     }
-    setProfileForm({
+    setProfileForm((prev) => ({
+      ...prev,
       nickname: profile.nickname,
-      career: profile?.profile?.career,
+      career: profile?.profile?.career ?? "",
       // purpose: purposeSelect,
-      goal: profile?.profile?.goal,
+      goal: profile?.profile?.goal ?? "",
       techStacks: profile?.profile?.techStacks ?? [],
-      profileImage: profile?.profile?.profileImage,
-    });
+      profileImage: profile?.profile?.profileImage ?? "",
+    }));
   }, [profile]);
 
   function handleSave() {
@@ -129,7 +130,7 @@ export default function ProfileEditPage() {
 
   return (
     <div className="flex flex-col gap-9 rounded-xl bg-white p-9">
-      <ProfileImage defaultImage={preview} />
+      <ProfileImage defaultImage={preview} onFileSelect={() => {}} />
 
       <div className="flex gap-18">
         <div className="flex flex-1 flex-col gap-6">

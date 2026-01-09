@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { getAccessToken } from "../utils/token";
+import { useState } from "react";
 import trashIcon from "./../assets/trash.png";
 import { formatDate } from "../lib/date";
 import { formatTime } from "../lib/time";
@@ -7,50 +6,28 @@ import doubleLeftIcon from "./../assets/2chevron-left.png";
 import leftIcon from "./../assets/chevron-left.png";
 import doubleRightIcon from "./../assets/2chevron-right.png";
 import rightIcon from "./../assets/chevron-right.png";
-import { API_BASE_URL } from "../api/api";
+import { useStudyLogsData } from "../hooks/queries/use-study-logs-data";
+import { useDeleteStudyLogs } from "../hooks/mutations/study-logs/use-delete-study-logs";
 
 export default function StudyRecord() {
-  const [pagination, setPagination] = useState();
-
   const [currentPage, setCurrentPage] = useState(1);
-  const [currentItems, setCurrentItems] = useState();
-  const [pageCount, setPageCount] = useState(1);
   const itemsPerpage = 10;
 
-  const pages = Array.from({ length: pageCount }, (_, i) => i + 1) || 1;
+  const { data, isLoading: isStudyLogsLoading } = useStudyLogsData(
+    currentPage,
+    itemsPerpage,
+  );
 
-  async function getStudyLogs() {
-    try {
-      const accessToken = getAccessToken();
+  const { mutate: deleteStudyLog, isPending: isDeleteStudyLogPending } =
+    useDeleteStudyLogs(currentPage, itemsPerpage);
 
-      if (!accessToken) throw new Error("로그인 필요");
+  if (!data) return null;
+  const { studyLogs, pagination } = data;
 
-      const response = await fetch(
-        `${API_BASE_URL}/api/study-logs?page=${currentPage}&limit=${itemsPerpage}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
-      );
+  const pages =
+    Array.from({ length: pagination.totalPages }, (_, i) => i + 1) || 1;
 
-      if (!response.ok) throw new Error("공부 기록 불러오기 실패");
-      const data = await response.json();
-      setCurrentItems(data.data.studyLogs);
-      setPageCount(data.data.pagination.totalPages);
-      setPagination(data.data.pagination);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  useEffect(() => {
-    getStudyLogs();
-  }, [currentPage]);
-
-  function removeRecord(id: string) {
-    setCurrentItems((prev) => prev.filter((item) => item.id !== id));
-  }
+  if (isStudyLogsLoading) return <div>로딩 중...</div>;
 
   return (
     <div className="flex flex-col gap-6 rounded-[18px] bg-white p-6">
@@ -80,7 +57,7 @@ export default function StudyRecord() {
             </tr>
           </thead>
           <tbody>
-            {currentItems?.map((log, i) => {
+            {studyLogs.map((log, i) => {
               const { hours, minutes } = formatTime(log.studyTime);
               return (
                 <tr
@@ -99,7 +76,8 @@ export default function StudyRecord() {
                   <td>{log.completionRate}</td>
                   <td>
                     <button
-                      onClick={() => removeRecord(log.id)}
+                      onClick={() => deleteStudyLog(log.id)}
+                      disabled={isDeleteStudyLogPending}
                       className="flex cursor-pointer items-center justify-center"
                     >
                       <img

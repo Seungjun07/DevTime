@@ -1,10 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import HeatMap from "@uiw/react-heat-map";
-import { getAccessToken } from "../utils/token";
-import { API_BASE_URL } from "../api/api";
+import { useHeatmapData } from "../hooks/queries/use-heatmap-data";
 
 export default function StudyHeatmap() {
-  const [heatmapData, setHeatmapData] = useState([]);
+  const {
+    data: heatmapData,
+    isError: isHeatmapError,
+    isLoading: isHeatmapLoading,
+    error,
+  } = useHeatmapData();
 
   const { startDate, endDate } = useMemo(() => {
     const end = new Date();
@@ -16,35 +20,8 @@ export default function StudyHeatmap() {
   // 히트맵 높이 계산 (7일 * (셀 크기 + 간격) + 월 라벨 공간)
   const heatmapHeight = 7 * (16 + 4) + 30;
 
-  async function getHeatMapData() {
-    try {
-      const accessToken = getAccessToken();
-      if (!accessToken) throw new Error("로그인 필요");
-
-      const response = await fetch(`${API_BASE_URL}/api/heatmap`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      if (!response.ok) throw new Error("히트맵 불러오기 실패");
-      const data = await response.json();
-
-      const formattedData = data.heatmap.map((item) => ({
-        date: item.date,
-        count: item.colorLevel,
-      }));
-
-      setHeatmapData(formattedData);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  useEffect(() => {
-    getHeatMapData();
-  }, []);
-
+  if (isHeatmapLoading) return <div>로딩 중...</div>;
+  if (isHeatmapError) return <div>{error.message}</div>;
   return (
     <div className="flex flex-col gap-6 rounded-[18px] bg-white p-6">
       <h2 className="text-disabled-400 text-lg leading-[22px] font-semibold">
@@ -84,7 +61,7 @@ export default function StudyHeatmap() {
               4: "#1e50e5",
               5: "#023e99",
             }}
-            legendRender={() => null}
+            legendRender={() => <></>}
             rectRender={(props, data) => {
               return <rect {...props} rx="3" />;
             }}

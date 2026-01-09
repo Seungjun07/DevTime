@@ -65,6 +65,12 @@ export default function ProfileDetailPage() {
   const { mutateAsync: createProfile, isPending: isCreateProfilePending } =
     useCreateProfile({ onSuccess: () => {} });
 
+  const isFormValid =
+    profileForm.career &&
+    profileForm.goal &&
+    selectedTechStacks.length > 0 &&
+    file;
+
   const handleSave = async () => {
     if (!file) {
       alert("업로드할 파일을 선택해주세요.");
@@ -152,7 +158,7 @@ export default function ProfileDetailPage() {
 
       <button
         onClick={handleSave}
-        disabled={disabled}
+        disabled={!isFormValid}
         className={`${disabled ? "bg-disabled-400 text-disabled-300" : "bg-primary-blue text-white"} h-12 w-105 cursor-pointer rounded px-4 py-3 text-lg leading-[22px] font-semibold`}
       >
         {uploading ? "업로드 중..." : "저장하기"}

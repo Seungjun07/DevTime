@@ -1,6 +1,17 @@
 import { formatTime } from "../lib/time";
 
-export default function WeekdayStudyAverage({ weekdayStudyTime }) {
+type StudyData = {
+  day: string;
+  value: number;
+};
+
+type WeekdayStudyAverageProps = {
+  weekdayStudyTime: StudyData[];
+};
+
+export default function WeekdayStudyAverage({
+  weekdayStudyTime,
+}: WeekdayStudyAverageProps) {
   const dailyLabel = ["S", "M", "T", "W", "T", "F", "S"];
 
   const dayToLabel: { [day: string]: string } = {

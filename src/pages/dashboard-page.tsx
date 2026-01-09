@@ -5,6 +5,10 @@ import WeekdayStudyAverage from "../components/weekday-study-average";
 import { useQuery } from "@tanstack/react-query";
 import { API_BASE_URL } from "../api/api";
 
+type StudyData = {
+  day: string;
+  value: number;
+};
 async function getMyStudyInfo() {
   try {
     const accessToken = getAccessToken();
@@ -118,7 +122,9 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <WeekdayStudyAverage weekdayStudyTime={weekdayStudyTime} />
+        <WeekdayStudyAverage
+          weekdayStudyTime={weekdayStudyTime as StudyData[]}
+        />
       </div>
 
       {/* 학습 잔디 */}

@@ -16,7 +16,7 @@ export default function MyPage() {
     if (typeof profilePurpose === "string") {
       setPurpose(profilePurpose);
     } else {
-      setPurpose(profilePurpose?.detail);
+      setPurpose(profilePurpose?.detail || "");
     }
   }, [profile]);
 

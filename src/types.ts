@@ -85,3 +85,49 @@ export interface ProfileForm {
   purpose: Purpose;
   techStacks: string[];
 }
+
+export interface CreateProfileForm {
+  career: string;
+  goal: string;
+  profileImage: string;
+  purpose: Purpose;
+  techStacks: string[];
+}
+
+export interface HeatmapData {
+  date: string;
+  colorLevel: number;
+}
+
+export interface HeatmapApiResponse {
+  heatmap: HeatmapData[];
+}
+
+export interface HeatmapValue {
+  date: string;
+  count: number;
+}
+
+export interface StudyLog {
+  id: string;
+  date: string;
+  todayGoal: string;
+  studyTime: number;
+  totalTasks: number;
+  incompleteTasks: number;
+  completionRate: number;
+}
+
+export interface Pagination {
+  page: number;
+  totalPages: number;
+  hasPrev: boolean;
+  hasNext: boolean;
+}
+
+export interface StudyLogResponse {
+  data: {
+    studyLogs: StudyLog[];
+    pagination: Pagination;
+  };
+}

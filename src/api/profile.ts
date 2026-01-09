@@ -1,4 +1,4 @@
-import type { MyProfile, ProfileForm } from "../types";
+import type { CreateProfileForm, MyProfile, ProfileForm } from "../types";
 import { deleteToken, getAccessToken } from "../utils/token";
 import { API_BASE_URL } from "./api";
 
@@ -22,7 +22,7 @@ export async function fetchProfile() {
   return data;
 }
 
-export async function createProfile(body: ProfileForm) {
+export async function createProfile(body: CreateProfileForm) {
   const accessToken = getAccessToken();
 
   if (!accessToken) throw new Error("로그인 필요");
