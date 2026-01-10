@@ -6,6 +6,9 @@ import DuplicatedModal from "../components/modal/duplicated-modal";
 import { useSignIn } from "../hooks/mutations/auth/use-sign-in";
 import { useAuthStore } from "../store/auth";
 import { type LoginData } from "../types";
+import Button from "../components/common/Button";
+import TextFieldInput from "../components/common/TextField/TextFieldInput";
+import TextField from "../components/common/TextField/TextField";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -116,62 +119,56 @@ export default function SignInPage() {
         <img className="mb-12 h-25 w-33" src={logo} alt="DevTime의 로고" />
 
         <div className="flex flex-col gap-9">
-          <div className="flex h-[94px] w-82 flex-col gap-2">
-            <label
-              className="w-full text-[14px] leading-[18px] font-medium"
-              htmlFor="email"
-            >
-              이메일
-            </label>
-            <input
+          <TextField label="이메일" htmlFor="email" className="w-82">
+            <TextFieldInput
               ref={emailRef}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={`rounded-1 text-4 text-disabled-300 border bg-gray-50 px-4 py-3 leading-5 font-medium ${errors.email ? "border-red-500 focus:ring-2 focus:ring-red-400" : "border-gray-300 focus:ring-2 focus:ring-blue-400"}`}
               id="email"
-              placeholder="이메일 주소를 입력해주세요."
               type="email"
               onBlur={() => setEmailTouched(true)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={"이메일 주소를 입력해주세요."}
+              variant={"default"}
+              inputSize={"md"}
+              className="w-82"
             />
             {errors.email && (
               <p className="text-secondary-negative pt-2 text-[12px] leading-4 font-medium">
                 {errors.email}
               </p>
             )}
-          </div>
+          </TextField>
 
-          <div className="flex h-[94px] w-82 flex-col gap-2">
-            <label
-              className="w-full text-[14px] leading-[18px] font-medium"
-              htmlFor="password"
-            >
-              비밀번호
-            </label>
-            <input
+          <TextField label="비밀번호" htmlFor="password" className="w-82">
+            <TextFieldInput
+              // ref={emailRef}
+              id="password"
+              type="password"
+              onBlur={() => setPasswordTouched(true)}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              onBlur={() => setPasswordTouched(true)}
-              className={`rounded-1 text-4 text-disabled-300 border bg-gray-50 px-4 py-3 leading-5 font-medium ${errors.password ? "border-red-500 focus:ring-2 focus:ring-red-400" : "border-gray-300 focus:ring-2 focus:ring-blue-400"}`}
-              id="password"
-              placeholder="비밀번호를 입력해주세요."
-              type="password"
+              placeholder={"비밀번호를 입력해주세요."}
+              variant={"default"}
+              inputSize={"md"}
             />
             {errors.password && (
               <p className="text-secondary-negative pt-2 text-[12px] leading-4 font-medium">
                 {errors.password}
               </p>
             )}
-          </div>
+          </TextField>
         </div>
 
         <div className="mt-12 flex flex-col gap-6">
-          <button
-            disabled={!isValid}
+          <Button
             onClick={handleSignIn}
-            className={` ${isValid ? "bg-primary-blue text-white hover:bg-blue-600" : "bg-disabled-400 text-disabled-300 cursor-not-allowed"} h-12 w-82 cursor-pointer rounded px-4 py-3`}
+            variant={"primary"}
+            size={"login"}
+            disabled={!isValid}
+            className="disabled:bg-disabled-400 disabled:text-disabled-300"
           >
             로그인
-          </button>
+          </Button>
           <button
             onClick={() => navigate("/sign-up")}
             className="text-primary-blue pretendard cursor-pointer text-[14px] leading-[18px] font-medium"

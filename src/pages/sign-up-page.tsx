@@ -1,9 +1,13 @@
 import { Link, useNavigate } from "react-router-dom";
 import logo from "./../assets/logo-vertical.svg";
-import Button from "../components/button";
+// import Button from "../components/button";
 import { useEffect, useState } from "react";
 import { useCheckNickname } from "../hooks/queries/use-check-nickname";
 import { API_BASE_URL } from "../api/api";
+import { checkEmail } from "../api/sign-up";
+import Button from "../components/common/Button";
+import TextFieldInput from "../components/common/TextField/TextFieldInput";
+import TextField from "../components/common/TextField/TextField";
 
 type FormErrors = {
   email?: string;
@@ -27,10 +31,7 @@ const ERROR_MSG = {
 };
 
 export default function SignUpPage() {
-  // const [email, setEmail] = useState("");
-  // const [nickname, setNickname] = useState("");
-  // const [password, setPassword] = useState("");
-  // const [confirmPassword, setConfirmPassword] = useState("");
+  const navigate = useNavigate();
 
   const [form, setForm] = useState<FormState>({
     email: "",
@@ -40,12 +41,12 @@ export default function SignUpPage() {
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
-  const [touched, setTouched] = useState({
-    email: false,
-    nickname: false,
-    password: false,
-    confirmPassword: false,
-  });
+  // const [touched, setTouched] = useState({
+  //   email: false,
+  //   nickname: false,
+  //   password: false,
+  //   confirmPassword: false,
+  // });
 
   const [isEmailChecked, setIsEmailChecked] = useState({
     available: false,
@@ -55,7 +56,6 @@ export default function SignUpPage() {
     available: false,
     message: "",
   });
-  const navigate = useNavigate();
 
   function validate() {
     const newErrors: FormErrors = {};
@@ -109,12 +109,7 @@ export default function SignUpPage() {
 
   async function handleCheckEmail() {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/signup/check-email?email=${encodeURIComponent(form.email)}`,
-      );
-
-      if (!response.ok) throw new Error("이메일 중복 검사 실패");
-      const data = await response.json();
+      const data = await checkEmail(form.email);
 
       setIsEmailChecked({ available: data.available, message: data.message });
     } catch (error) {
@@ -133,123 +128,126 @@ export default function SignUpPage() {
     setIsNicknameChecked(data);
   }
 
+  const isSignUpEnabled =
+    form.email &&
+    isEmailChecked.available &&
+    form.nickname &&
+    isNicknameChecked.available &&
+    form.password &&
+    form.confirmPassword === form.password &&
+    Object.keys(errors).length === 0;
+
   return (
     <div className="m-auto flex h-[790px] w-[420px] flex-1 flex-col items-center gap-10">
       <div className="text-primary-blue text-2xl leading-[30px] font-bold">
         회원가입
       </div>
 
-      <div className="h-[70px]">
-        <label
-          htmlFor="email"
-          className="text-[14px] leading-[18px] font-medium text-gray-600"
-        >
-          아이디
-        </label>
-        <div>
-          <input
+      <TextField label="아이디" htmlFor="email">
+        <div className="flex gap-2">
+          <TextFieldInput
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
-            className="placeholder-custom w-81 rounded bg-gray-50 px-4 py-3"
+            className="flex-1"
             type="email"
             id="email"
             placeholder="이메일 주소 형식으로 입력해 주세요."
+            variant={"default"}
           />
-          <Button onClick={handleCheckEmail} disabled />
-          {errors.email && (
-            <p className="text-secondary-negative pt-2 text-[12px] leading-4 font-medium">
-              {errors.email}
-            </p>
-          )}
-          {isEmailChecked.available && (
-            <p className="pt-2 text-[12px] leading-4 font-medium text-green-500">
-              {isEmailChecked.message}
-            </p>
-          )}
+          <Button
+            onClick={handleCheckEmail}
+            variant={"secondary"}
+            size={"sm"}
+            disabled={!form.email}
+          >
+            중복 확인
+          </Button>
         </div>
-      </div>
+        {errors.email && (
+          <p className="text-secondary-negative pt-2 text-[12px] leading-4 font-medium">
+            {errors.email}
+          </p>
+        )}
+        {
+          <p
+            className={`pt-2 text-[12px] leading-4 font-medium ${isEmailChecked.available ? "text-green-500" : "text-red-500"}`}
+          >
+            {isEmailChecked.message}
+          </p>
+        }
+      </TextField>
 
-      <div className="h-[70px]">
-        <label
-          htmlFor="nickname"
-          className="text-[14px] leading-[18px] font-medium text-gray-600"
-        >
-          닉네임
-        </label>
-        <div>
-          <input
+      <TextField label="닉네임" htmlFor="nickname">
+        <div className="flex gap-2">
+          <TextFieldInput
             value={form.nickname}
             onChange={(e) => setForm({ ...form, nickname: e.target.value })}
-            className="placeholder-custom w-81 rounded bg-gray-50 px-4 py-3"
+            className="flex-1"
             type="text"
             id="nickname"
             placeholder="닉네임을 입력해 주세요."
+            variant={"default"}
           />
-          <Button onClick={handleCheckNickname} disabled />
-          {errors.nickname && (
-            <p className="text-secondary-negative pt-2 text-[12px] leading-4 font-medium">
-              {errors.nickname}
-            </p>
-          )}
-          {
-            <p
-              className={`pt-2 text-[12px] leading-4 font-medium ${isNicknameChecked.available ? "text-green-500" : "text-red-500"}`}
-            >
-              {isNicknameChecked.message}
-            </p>
-          }
+          <Button
+            onClick={handleCheckNickname}
+            variant={"secondary"}
+            size={"sm"}
+            disabled={!form.nickname}
+          >
+            중복 확인
+          </Button>
         </div>
-      </div>
+        {errors.nickname && (
+          <p className="text-secondary-negative pt-2 text-[12px] leading-4 font-medium">
+            {errors.nickname}
+          </p>
+        )}
+        {
+          <p
+            className={`pt-2 text-[12px] leading-4 font-medium ${isNicknameChecked.available ? "text-green-500" : "text-red-500"}`}
+          >
+            {isNicknameChecked.message}
+          </p>
+        }
+      </TextField>
 
-      <div className="h-[70px]">
-        <label
-          htmlFor="password"
-          className="text-[14px] leading-[18px] font-medium text-gray-600"
-        >
-          비밀번호
-        </label>
-        <div>
-          <input
+      <TextField label="비밀번호" htmlFor="password">
+        <div className="flex gap-2">
+          <TextFieldInput
             value={form.password}
-            id="password"
             onChange={(e) => setForm({ ...form, password: e.target.value })}
-            className="placeholder-custom w-105 rounded bg-gray-50 px-4 py-3"
             type="password"
+            id="password"
             placeholder="비밀번호를 입력해 주세요."
+            variant={"default"}
           />
-          {errors.password && (
-            <p className="text-secondary-negative pt-2 text-[12px] leading-4 font-medium">
-              {errors.password}
-            </p>
-          )}
         </div>
-      </div>
+        {errors.password && (
+          <p className="text-secondary-negative pt-2 text-[12px] leading-4 font-medium">
+            {errors.password}
+          </p>
+        )}
+      </TextField>
 
-      <div className="h-[70px]">
-        <label
-          htmlFor="confirmPassword"
-          className="text-[14px] leading-[18px] font-medium text-gray-600"
-        >
-          비밀번호 확인
-        </label>
-        <div>
-          <input
+      <TextField label="비밀번호 확인" htmlFor="confirmPassword">
+        <div className="flex gap-2">
+          <TextFieldInput
             value={form.confirmPassword}
-            id="confirmPassword"
             onChange={(e) =>
               setForm({ ...form, confirmPassword: e.target.value })
             }
-            className="placeholder-custom w-105 rounded bg-gray-50 px-4 py-3"
             type="password"
+            id="confirmPassword"
             placeholder="비밀번호를 다시 입력해 주세요."
+            variant={"default"}
           />
-          {errors.confirmPassword && (
-            <p className="text-secondary-negative pt-2 text-[12px] leading-4 font-medium">
-              {errors.confirmPassword}
-            </p>
-          )}
         </div>
-      </div>
+        {errors.confirmPassword && (
+          <p className="text-secondary-negative pt-2 text-[12px] leading-4 font-medium">
+            {errors.confirmPassword}
+          </p>
+        )}
+      </TextField>
 
       <div className="h-34">
         <label className="text-[14px] leading-[18px] font-medium text-gray-600">
@@ -294,12 +292,9 @@ export default function SignUpPage() {
         </div>
       </div>
 
-      <button
-        onClick={handleSignUpClick}
-        className="bg-disabled-400 text-disabled-300 h-12 w-105 rounded px-4 py-3 text-lg leading-[22px] font-semibold"
-      >
+      <Button onClick={handleSignUpClick} variant={"primary"} size={"lg"}>
         회원가입
-      </button>
+      </Button>
 
       <div>
         <Link

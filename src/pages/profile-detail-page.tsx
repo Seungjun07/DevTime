@@ -13,6 +13,8 @@ import { usePresignedUrl } from "../components/file/use-presigned-url";
 import { uploadToS3 } from "../api/file";
 import StudyPurPoseSelect from "../components/form/study-purpose-select";
 import StudyGoalInput from "../components/form/study-goal-input";
+import TextField from "../components/common/TextField/TextField";
+import TextFieldInput from "../components/common/TextField/TextFieldInput";
 
 export default function ProfileDetailPage() {
   const navigate = useNavigate();
@@ -129,13 +131,17 @@ export default function ProfileDetailPage() {
         className="w-105"
       />
 
-      <StudyGoalInput
-        value={profileForm.goal}
-        onChange={(value) =>
-          setProfileForm((prev) => ({ ...prev, goal: value }))
-        }
-        className="w-105"
-      />
+      <TextField label="공부 목표" htmlFor="studyGoal">
+        <TextFieldInput
+          value={profileForm.goal}
+          onChange={(e) =>
+            setProfileForm((prev) => ({ ...prev, goal: e.target.value }))
+          }
+          id="studyGoal"
+          placeholder="공부 목표를 입력해 주세요."
+          variant={"default"}
+        />
+      </TextField>
 
       <div className="flex w-105 flex-col gap-4">
         <ProfileTechStack

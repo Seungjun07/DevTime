@@ -19,6 +19,7 @@ import { useProfileData } from "../hooks/queries/use-profile-data";
 import { useAuthStore } from "../store/auth";
 import SignInAlertModal from "../components/modal/sign-in-alert-modal";
 import { API_BASE_URL } from "../api/api";
+import Button from "../components/common/Button";
 
 export default function IndexPage() {
   const [isCreateTodosModalOpen, setIsCreateTodosModalOpen] = useState(false);
