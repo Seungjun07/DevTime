@@ -4,6 +4,7 @@ import { fetchTasksOnServer, updateTasksOnServer } from "../../../api/todos";
 import TaskList from "../../task/task-list";
 import useTasks from "../../../hooks/use-tasks";
 import { useTasksData } from "../../../hooks/queries/use-tasks-data";
+import Button from "../../common/Button";
 
 export default function ManageTodos({
   onClose,
@@ -76,28 +77,27 @@ export default function ManageTodos({
         />
 
         <div className="flex justify-end gap-4">
-          <button
-            className="text-primary-blue h-12 cursor-pointer rounded-sm bg-gray-50 px-4 py-3 text-[18px] leading-[22px] font-semibold"
-            onClick={onClose}
-          >
+          <Button onClick={onClose} variant={"tertiary"} size={"lg"}>
             취소
-          </button>
+          </Button>
           {isEditMode ? (
-            <button
+            <Button
               disabled={isDisabled}
               onClick={() => setIsEditMode(false)}
-              className={`h-12 cursor-pointer rounded-sm px-4 py-3 text-[18px] leading-[22px] font-semibold ${isDisabled ? "disabled-button" : "bg-primary-blue/10 text-primary-blue"}`}
+              variant={"secondary"}
+              size={"lg"}
             >
               변경 사항 저장하기
-            </button>
+            </Button>
           ) : (
-            <button
+            <Button
               disabled={isDisabled}
               onClick={updateTasks}
-              className={`h-12 cursor-pointer rounded-sm px-4 py-3 text-[18px] leading-[22px] font-semibold ${isDisabled ? "disabled-button" : "bg-primary-blue/10 text-primary-blue"}`}
+              variant={"secondary"}
+              size={"lg"}
             >
               저장하기
-            </button>
+            </Button>
           )}
         </div>
       </div>

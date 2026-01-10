@@ -165,7 +165,6 @@ export default function SignInPage() {
             variant={"primary"}
             size={"login"}
             disabled={!isValid}
-            className="disabled:bg-disabled-400 disabled:text-disabled-300"
           >
             로그인
           </Button>

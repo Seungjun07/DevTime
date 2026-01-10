@@ -13,6 +13,7 @@ import { useDebounce } from "../hooks/use-debounce";
 import { useTechStack } from "../hooks/queries/use-tech-stack-data";
 import { useCheckNickname } from "../hooks/queries/use-check-nickname";
 import { IMAGE_URL } from "../constant";
+import Button from "../components/common/Button";
 
 export default function ProfileEditPage() {
   const { data: profile, isLoading: isProfileLoading } = useProfileData();
@@ -252,15 +253,17 @@ export default function ProfileEditPage() {
       </div>
 
       <div className="flex justify-end gap-4">
-        <button className="text-primary-blue h-12 rounded bg-gray-50 px-4 py-3 text-[18px] leading-[22px] font-semibold">
+        <Button variant={"tertiary"} size={"lg"}>
           취소
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={handleSave}
-          className="bg-disabled-400 text-disabled-300 h-12 rounded px-4 py-3 text-[18px] leading-[22px] font-semibold"
+          disabled={!profileForm.goal}
+          variant={"primary"}
+          size={"lg"}
         >
           변경 사항 저장하기
-        </button>
+        </Button>
       </div>
     </div>
   );

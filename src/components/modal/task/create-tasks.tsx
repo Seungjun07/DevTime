@@ -3,6 +3,7 @@ import { createTimer } from "../../../api/timer";
 import type { TaskModalType } from "../../../types";
 import TaskList from "../../task/task-list";
 import useTasks from "../../../hooks/use-tasks";
+import Button from "../../common/Button";
 
 export default function CreateTasks({
   onClose,
@@ -54,19 +55,17 @@ export default function CreateTasks({
       />
 
       <div className="flex justify-end gap-4">
-        <button
-          className="text-primary-blue h-12 cursor-pointer rounded-sm bg-gray-50 px-4 py-3 text-[18px] leading-[22px] font-semibold"
-          onClick={onClose}
-        >
+        <Button onClick={onClose} variant={"tertiary"} size={"lg"}>
           취소
-        </button>
-        <button
+        </Button>
+        <Button
           disabled={isDisabled}
           onClick={handleStartTimer}
-          className={`h-12 cursor-pointer rounded-sm px-4 py-3 text-[18px] leading-[22px] font-semibold ${isDisabled ? "disabled-button" : "bg-primary-blue/10 text-primary-blue"}`}
+          variant={"secondary"}
+          size={"lg"}
         >
           타이머 시작하기
-        </button>
+        </Button>
       </div>
     </>
   );

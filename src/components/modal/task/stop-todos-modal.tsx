@@ -5,6 +5,7 @@ import { fetchTasksOnServer } from "../../../api/todos";
 import useTasks from "../../../hooks/use-tasks";
 import TaskList from "../../task/task-list";
 import { API_BASE_URL } from "../../../api/api";
+import Button from "../../common/Button";
 
 export default function StopTodosModal({
   onClose,
@@ -113,21 +114,19 @@ export default function StopTodosModal({
         </div>
 
         <div className="flex justify-end gap-4">
-          <button
-            className="text-primary-blue h-12 cursor-pointer rounded-sm bg-gray-50 px-4 py-3 text-[18px] leading-[22px] font-semibold"
-            onClick={onClose}
-          >
+          <Button onClick={onClose} variant={"tertiary"} size={"lg"}>
             취소
-          </button>
-          <button
+          </Button>
+          <Button
             disabled={isDisabled}
             onClick={() => {
               stopTimer();
             }}
-            className={`h-12 cursor-pointer rounded-sm px-4 py-3 text-[18px] leading-[22px] font-semibold ${isDisabled ? "disabled-button" : "bg-primary-blue/10 text-primary-blue"}`}
+            variant={"secondary"}
+            size={"lg"}
           >
             공부 완료하기
-          </button>
+          </Button>
         </div>
       </div>
     </div>

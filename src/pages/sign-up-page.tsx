@@ -292,7 +292,12 @@ export default function SignUpPage() {
         </div>
       </div>
 
-      <Button onClick={handleSignUpClick} variant={"primary"} size={"lg"}>
+      <Button
+        onClick={handleSignUpClick}
+        variant={"primary"}
+        size={"lg"}
+        className="w-105"
+      >
         회원가입
       </Button>
 
