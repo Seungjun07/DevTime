@@ -1,43 +1,65 @@
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../store/auth";
+import { useDeleteTimer } from "../hooks/mutations/timer/use-delete-timer";
+import { useProfileData } from "../hooks/queries/use-profile-data";
+import { getAccessToken } from "../utils/token";
+import { API_BASE_URL } from "../api/api";
+import { type SplitTime, type TaskModalType } from "../types";
+
+import StudyTimer from "../components/timer/study-timer";
+import TaskModalLayout from "../components/modal/task/task-modal-layout";
+import CreateTasks from "../components/modal/task/create-tasks";
+import Dialog from "../components/common/Dialog/Dialog";
+import ManageTodos from "../components/modal/task/manage-todos";
+import StopTodosModal from "../components/modal/task/stop-todos-modal";
+
 import startIcon from "./../assets/Start.png";
 import enabledStartIcon from "./../assets/Start-enabled.png";
 import pauseIcon from "./../assets/Pause.png";
 import enabledPauseIcon from "./../assets/Pause-enabled.png";
 import finishIcon from "./../assets/Finish.png";
 import enabledFinishIcon from "./../assets/Finish-enabled.png";
-import { useEffect, useRef, useState } from "react";
-import { deleteToken, getAccessToken } from "../utils/token";
-import { type SplitTime, type MyProfile } from "../types";
 import resetIcon from "./../assets/Reset.png";
 import todoIcon from "./../assets/TODO.png";
-import ManageTodos from "../components/modal/task/manage-todos";
-import StudyTimer from "../components/timer/study-timer";
-import StopTodosModal from "../components/modal/task/stop-todos-modal";
-import TaskModalLayout from "../components/modal/task/task-modal-layout";
-import CreateTasks from "../components/modal/task/create-tasks";
-import { useDeleteTimer } from "../hooks/mutations/timer/use-delete-timer";
-import { useProfileData } from "../hooks/queries/use-profile-data";
-import { useAuthStore } from "../store/auth";
-import SignInAlertModal from "../components/modal/sign-in-alert-modal";
-import { API_BASE_URL } from "../api/api";
-import Button from "../components/common/Button";
+import { useTimer } from "../hooks/use-timer";
+
+// type TaskModalType = "CREATE" | "UPDATE" | "FINISH" | null;
 
 export default function IndexPage() {
-  const [isCreateTodosModalOpen, setIsCreateTodosModalOpen] = useState(false);
-  const [isUpdateTodosModalOpen, setIsUpdateTodosModalOpen] = useState(false);
-  const [isStopTodosModalOpen, setIsStopTodosModalOpen] = useState(false);
-
-  const [isLoading, setIsLoading] = useState(false);
+  // const [taskModal, setTaskModal] = useState<TaskModalType>(null);
+  const navigate = useNavigate();
 
   const isLogin = useAuthStore((state) => state.isLogin);
   const accessToken = useAuthStore((state) => state.accessToken);
   const logout = useAuthStore((state) => state.actions.logout);
+
+  const [isCreateTodosModalOpen, setIsCreateTodosModalOpen] = useState(false);
+  const [isUpdateTodosModalOpen, setIsUpdateTodosModalOpen] = useState(false);
+  const [isStopTodosModalOpen, setIsStopTodosModalOpen] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const storedTimer = localStorage.getItem("timerId");
+  const timerId = storedTimer ? JSON.parse(storedTimer) : null;
+
+  const {
+    seconds,
+    isRunning,
+    splitTimes,
+    fetchTimer,
+    startTimer,
+    pauseTimer,
+    resetTimer,
+  } = useTimer(timerId);
+
   useEffect(() => {
     if (!accessToken) {
       logout();
     }
   }, []);
 
-  const [showLoginModal, setShowLoginModal] = useState(false);
   function handleStartTimerClick() {
     if (!isLogin) {
       setShowLoginModal(true);
@@ -45,197 +67,6 @@ export default function IndexPage() {
       setIsCreateTodosModalOpen(true);
     }
   }
-
-  function onClose() {
-    setShowLoginModal(false);
-  }
-
-  const storedTimer = localStorage.getItem("timerId");
-  const timerId = storedTimer ? JSON.parse(storedTimer) : null;
-
-  const [startTime, setStartTime] = useState<Date | null>(null);
-
-  const { mutate: deleteTimer, isPending: isDeleteTimerPending } =
-    useDeleteTimer();
-
-  function handleResetClick() {
-    deleteTimer(timerId);
-    resetTimer();
-  }
-
-  const {
-    data: profile,
-    isLoading: isProfileLoading,
-    error: profileError,
-  } = useProfileData();
-
-  async function fetchTimer() {
-    setIsLoading(true);
-
-    try {
-      const accessToken = getAccessToken();
-      if (!accessToken) throw new Error("로그인 필요");
-
-      const response = await fetch(`${API_BASE_URL}/api/timers`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          localStorage.removeItem("timerId");
-        }
-        throw new Error("타이머 불러오기 실패");
-      }
-
-      const data = await response.json();
-
-      setSplitTimes(data.splitTimes || []);
-
-      if (data.startTime) {
-        const lastUpdate = new Date(data.lastUpdateTime);
-        const start = new Date(data.startTime);
-        const now = new Date();
-
-        if (now > lastUpdate) splitByDate(lastUpdate, now);
-
-        setStartTime(now);
-        const elapsedMs = now.getTime() - start.getTime();
-        setSeconds(Math.floor(elapsedMs / 1000));
-        setIsRunning(true);
-        intervalRef.current = window.setInterval(
-          () => setSeconds((prev) => prev + 1),
-          1000,
-        );
-        startPolling();
-      }
-    } catch (error: unknown) {
-      console.log(error);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    fetchTimer();
-
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      stopPolling();
-    };
-  }, []);
-
-  async function updateTimer() {
-    try {
-      const accessToken = getAccessToken();
-      if (!accessToken) throw new Error("로그인 필요");
-
-      const response = await fetch(`${API_BASE_URL}/api/timers/${timerId}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          timerId,
-          splitTimes,
-        }),
-      });
-
-      if (!response.ok) throw new Error("타이머 불러오기 실패");
-
-      // const data = await response.json();
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  const [seconds, setSeconds] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
-  const intervalRef = useRef<number | null>(null);
-
-  const [splitTimes, setSplitTimes] = useState<SplitTime[]>([]);
-  const pollingRef = useRef<number | null>(null); //10분 주기
-
-  // splitTimes 누적
-  const addSplitTime = (date: Date, ms: number) => {
-    setSplitTimes((prev) => [
-      ...prev,
-      { date: date.toISOString(), timeSpent: ms },
-    ]);
-  };
-
-  // 날짜별로 시간 분리
-  const splitByDate = (start: Date, end: Date) => {
-    // 현재 계산 중인 시간 시작점
-    let current = new Date(start);
-
-    while (current < end) {
-      // 현재 날짜의 마지막 23:59:59.999
-      const endOfDay = new Date(current);
-      endOfDay.setHours(23, 59, 59, 999);
-
-      // 오늘 날짜 끝과 종료 시점 중 작은 값
-      const chunkEnd = end < endOfDay ? end : endOfDay;
-      const diffMs = chunkEnd.getTime() - current.getTime();
-
-      // current 기준 날짜에 해당하는 시간 누적
-      addSplitTime(current, diffMs);
-
-      // 다음 날짜로 이동
-      current = new Date(chunkEnd.getTime() + 1);
-    }
-  };
-
-  // polling
-  const startPolling = () => {
-    if (!pollingRef.current) {
-      pollingRef.current = setInterval(() => updateTimer(), 10 * 60 * 1000);
-    }
-  };
-
-  const stopPolling = () => {
-    if (pollingRef.current) {
-      clearInterval(pollingRef.current);
-      pollingRef.current = null;
-    }
-  };
-
-  const startTimer = () => {
-    if (!isRunning) {
-      setIsRunning(true);
-      const now = new Date();
-      setStartTime(now);
-      intervalRef.current = window.setInterval(
-        () => setSeconds((prev) => prev + 1),
-        1000,
-      );
-      startPolling();
-    }
-  };
-
-  const pauseTimer = async () => {
-    if (isRunning && startTime) {
-      const now = new Date();
-      splitByDate(startTime, now);
-    }
-    setIsRunning(false);
-    setStartTime(null);
-    if (intervalRef.current) clearInterval(intervalRef.current!);
-
-    stopPolling();
-    await updateTimer();
-  };
-
-  const resetTimer = () => {
-    clearInterval(intervalRef.current!);
-    setIsRunning(false);
-    setSeconds(0);
-    localStorage.removeItem("timerId");
-    localStorage.removeItem("studyLogId");
-  };
 
   const formatTime = (sec: number) => {
     const hour = Math.floor(sec / 3600)
@@ -251,16 +82,31 @@ export default function IndexPage() {
 
   const { hour, minute, s } = formatTime(seconds);
 
-  useEffect(() => {
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, []);
+  function handleModalClose() {
+    setShowLoginModal(false);
+  }
+  function handleMoveToSignIn() {
+    setShowLoginModal(false);
+    navigate("/sign-in");
+  }
+
+  const { mutate: deleteTimer, isPending: isDeleteTimerPending } =
+    useDeleteTimer();
+
+  function handleResetClick() {
+    deleteTimer(timerId);
+    resetTimer();
+  }
+
+  const {
+    data: profile,
+    isLoading: isProfileLoading,
+    error: profileError,
+  } = useProfileData();
 
   if (isLoading) return <div>로딩 중...</div>;
   return (
     <div>
-      {showLoginModal && <SignInAlertModal close={onClose} />}
       {isLogin ? (
         <h1 className="pb-20 text-center text-7xl">
           {profile?.profile?.goal
@@ -380,7 +226,14 @@ export default function IndexPage() {
           />
         </TaskModalLayout>
       )}
-      {/* {isOpen && <CreateTodos onClick={() => setIsOpen(false)} />} */}
+      <Dialog
+        isOpen={showLoginModal}
+        title="로그인이 필요합니다."
+        description="DevTime을 사용하려면 로그인이 필요합니다. 로그인 페이지로 이동할까요?"
+        onCancel={handleModalClose}
+        onConfirm={handleMoveToSignIn}
+        confirmText="로그인하기"
+      />
     </div>
   );
 }
