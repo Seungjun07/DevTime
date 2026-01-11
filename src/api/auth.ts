@@ -1,4 +1,3 @@
-import type { LoginData } from "../types";
 import { API_BASE_URL } from "./api";
 import {
   deleteToken,
@@ -6,6 +5,15 @@ import {
   getRefreshToken,
   setAccessToken,
 } from "../utils/token";
+
+export interface LoginResponse {
+  accessToken: string;
+  isDuplicateLogin: boolean;
+  isFirstLogin: boolean;
+  message: string;
+  refreshToken: string;
+  success: boolean;
+}
 
 export async function signIn({
   email,
@@ -18,14 +26,14 @@ export async function signIn({
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      email: email,
-      password: password,
+      email,
+      password,
     }),
   });
 
   if (!response.ok) throw new Error("로그인 실패");
 
-  const data: LoginData = await response.json();
+  const data: LoginResponse = await response.json();
   return data;
 }
 

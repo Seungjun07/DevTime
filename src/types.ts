@@ -1,3 +1,10 @@
+export interface SignUpFormState {
+  email: string;
+  nickname: string;
+  password: string;
+  confirmPassword: string;
+}
+
 export interface LoginData {
   accessToken: string;
   isDuplicateLogin: boolean;

@@ -9,6 +9,7 @@ import { type LoginData } from "../types";
 import Button from "../components/common/Button";
 import TextFieldInput from "../components/common/TextField/TextFieldInput";
 import TextField from "../components/common/TextField/TextField";
+import { validateEmail, validatePassword } from "../utils/validate";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -16,50 +17,20 @@ export default function SignInPage() {
 
   const emailRef = useRef<HTMLInputElement>(null);
 
-  const [errors, setErrors] = useState({ email: "", password: "" });
-  const [emailTouched, setEmailTouched] = useState(false);
-  const [passwordTouched, setPasswordTouched] = useState(false);
+  const [touched, setTouched] = useState({
+    email: false,
+    password: false,
+  });
+
   const navigate = useNavigate();
 
-  function validateEmail(emailValue: string) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailValue.trim() || !emailRegex.test(emailValue)) {
-      return "이메일 형식으로 작성해 주세요.";
-    }
+  const errors = {
+    email: touched.email ? validateEmail(email) : "",
+    password: touched.password ? validatePassword(password) : "",
+  };
 
-    return "";
-  }
+  const isFormValid = email && password && !errors.email && !errors.password;
 
-  function validatePassword(passwordValue: string) {
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
-    if (!passwordValue.trim() || !passwordRegex.test(passwordValue)) {
-      return "비밀번호는 8자 이상, 영문과 숫자 조합이어야 합니다.";
-    }
-
-    return "";
-  }
-
-  useEffect(() => {
-    const emailError = emailTouched ? validateEmail(email) : "";
-    const passwordError = passwordTouched ? validatePassword(password) : "";
-
-    setErrors({ email: emailError, password: passwordError });
-  }, [email, password, emailTouched, passwordTouched]);
-
-  const isValid = !validateEmail(email) && !validatePassword(password);
-  // function validate() {
-  //   const newErrors: LoginError = {};
-
-  //   if (email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-  //     newErrors.email = ERROR.email;
-  //   }
-
-  //   if (!password || !/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/.test(password)) {
-  //     newErrors.password = ERROR.password;
-  //   }
-
-  //   return newErrors;
-  // }
   const [isDuplicateLogin, setIsDuplicateLogin] = useState(false);
   const [loginData, setLoginData] = useState<LoginData | null>(null);
   const setTokens = useAuthStore((state) => state.actions.setTokens);
@@ -83,16 +54,7 @@ export default function SignInPage() {
   });
 
   async function handleSignIn() {
-    setEmailTouched(true);
-    setPasswordTouched(true);
-
-    const emailError = validateEmail(email);
-    const passwordError = validatePassword(password);
-
-    if (emailError || passwordError) {
-      setErrors({ email: emailError, password: passwordError });
-      return;
-    }
+    if (!isFormValid) return;
 
     signIn({ email, password });
   }
@@ -100,11 +62,6 @@ export default function SignInPage() {
   function onConfirm(data: LoginData) {
     setTokens(data);
   }
-  //   } catch (error) {
-  //     alert("로그인 정보를 다시 확인해 주세요");
-  //     emailRef.current?.focus();
-  //     setPassword("");
-  //   }
 
   return (
     <div
@@ -124,7 +81,7 @@ export default function SignInPage() {
               ref={emailRef}
               id="email"
               type="email"
-              onBlur={() => setEmailTouched(true)}
+              onBlur={() => setTouched((prev) => ({ ...prev, email: true }))}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={"이메일 주소를 입력해주세요."}
@@ -144,7 +101,7 @@ export default function SignInPage() {
               // ref={emailRef}
               id="password"
               type="password"
-              onBlur={() => setPasswordTouched(true)}
+              onBlur={() => setTouched((prev) => ({ ...prev, password: true }))}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder={"비밀번호를 입력해주세요."}
@@ -164,7 +121,7 @@ export default function SignInPage() {
             onClick={handleSignIn}
             variant={"primary"}
             size={"login"}
-            disabled={!isValid}
+            disabled={!isFormValid}
           >
             로그인
           </Button>
