@@ -4,11 +4,14 @@ import type { LoginData } from "../../../types";
 
 export function useSignIn({
   onSuccess,
+  onError,
 }: {
   onSuccess: (data: LoginData) => void;
+  onError: (data: LoginData) => void;
 }) {
   return useMutation({
     mutationFn: signIn,
     onSuccess,
+    onError,
   });
 }

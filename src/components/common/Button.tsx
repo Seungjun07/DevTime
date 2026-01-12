@@ -43,4 +43,8 @@ const buttonVariants = cva("font-semibold rounded cursor-pointer px-4 py-3", {
       login: "h-12 w-82 text-lg",
     },
   },
+  defaultVariants: {
+    variant: "primary",
+    size: "lg",
+  },
 });
