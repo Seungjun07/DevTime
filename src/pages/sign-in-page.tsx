@@ -12,17 +12,16 @@ import TextField from "../components/common/TextField/TextField";
 import { validateEmail, validatePassword } from "../utils/validate";
 
 export default function SignInPage() {
+  const navigate = useNavigate();
+  const emailRef = useRef<HTMLInputElement>(null);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  const emailRef = useRef<HTMLInputElement>(null);
 
   const [touched, setTouched] = useState({
     email: false,
     password: false,
   });
-
-  const navigate = useNavigate();
 
   const errors = {
     email: touched.email ? validateEmail(email) : "",
@@ -31,9 +30,9 @@ export default function SignInPage() {
 
   const isFormValid = email && password && !errors.email && !errors.password;
 
+  const setTokens = useAuthStore((state) => state.actions.setTokens);
   const [isDuplicateLogin, setIsDuplicateLogin] = useState(false);
   const [loginData, setLoginData] = useState<LoginData | null>(null);
-  const setTokens = useAuthStore((state) => state.actions.setTokens);
 
   const { mutate: signIn, isPending } = useSignIn({
     onSuccess: (data) => {
@@ -43,15 +42,19 @@ export default function SignInPage() {
         return;
       }
 
-      setTokens(data);
-
-      if (data.isFirstLogin) {
-        navigate("/profile", { replace: true });
-      } else {
-        navigate("/", { replace: true });
-      }
+      successLogin(data);
     },
   });
+
+  function successLogin(data: LoginData) {
+    setTokens(data);
+
+    if (data.isFirstLogin) {
+      navigate("/profile", { replace: true });
+    } else {
+      navigate("/", { replace: true });
+    }
+  }
 
   async function handleSignIn() {
     if (!isFormValid) return;
@@ -59,8 +62,10 @@ export default function SignInPage() {
     signIn({ email, password });
   }
 
-  function onConfirm(data: LoginData) {
-    setTokens(data);
+  function handleDuplicateConfirm() {
+    if (!loginData) return;
+
+    successLogin(loginData);
   }
 
   return (
@@ -76,27 +81,30 @@ export default function SignInPage() {
         <img className="mb-12 h-25 w-33" src={logo} alt="DevTime의 로고" />
 
         <div className="flex flex-col gap-9">
-          <TextField label="이메일" htmlFor="email" className="w-82">
-            <TextFieldInput
+          <TextField id="email" className="w-82">
+            <TextField.Label>이메일</TextField.Label>
+
+            <TextField.Input
               ref={emailRef}
-              id="email"
               type="email"
               onBlur={() => setTouched((prev) => ({ ...prev, email: true }))}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={"이메일 주소를 입력해주세요."}
-              variant={"default"}
+              state={errors.email ? "error" : "default"}
               inputSize={"md"}
               className="w-82"
             />
             {errors.email && (
-              <p className="text-secondary-negative pt-2 text-[12px] leading-4 font-medium">
+              <TextField.HelperText status={"error"}>
                 {errors.email}
-              </p>
+              </TextField.HelperText>
             )}
           </TextField>
 
-          <TextField label="비밀번호" htmlFor="password" className="w-82">
+          <TextField id="password" className="w-82">
+            <TextField.Label>비밀번호</TextField.Label>
+
             <TextFieldInput
               // ref={emailRef}
               id="password"
@@ -105,13 +113,13 @@ export default function SignInPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder={"비밀번호를 입력해주세요."}
-              variant={"default"}
+              state={errors.password ? "error" : "default"}
               inputSize={"md"}
             />
             {errors.password && (
-              <p className="text-secondary-negative pt-2 text-[12px] leading-4 font-medium">
+              <TextField.HelperText status={"error"}>
                 {errors.password}
-              </p>
+              </TextField.HelperText>
             )}
           </TextField>
         </div>
@@ -134,9 +142,19 @@ export default function SignInPage() {
         </div>
       </div>
       {isDuplicateLogin && (
+        // <Dialog
+        //   isOpen={showLoginModal}
+        //   title="중복 로그인이 불가능합니다."
+        //   description="다른 기기에 중복 로그인 한 상태입니다. [확인] 버튼을 누르면 다른
+        //     기기에서 강제 로그아웃되며, 진행중이던 타이머가 있다면 기록이 자동
+        //     삭제됩니다."
+        //   onCancel={handleModalClose}
+        //   onConfirm={handleMoveToSignIn}
+        //   confirmText="로그인하기"
+        // />
         <DuplicatedModal
           close={() => {
-            onConfirm(loginData!);
+            handleDuplicateConfirm();
             setIsDuplicateLogin(false);
           }}
         />

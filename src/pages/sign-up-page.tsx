@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useCheckNickname } from "../hooks/queries/use-check-nickname";
-import { API_BASE_URL } from "../api/api";
 import { checkEmail, signUp } from "../api/sign-up";
 import Button from "../components/common/Button";
 import TextFieldInput from "../components/common/TextField/TextFieldInput";
@@ -43,7 +42,7 @@ export default function SignUpPage() {
 
   const errors = {
     email: touched.email ? validateEmail(form.email) : "",
-    nickname: touched.nickname ? validateNickname(form.email) : "",
+    nickname: touched.nickname ? validateNickname(form.nickname) : "",
     password: touched.password ? validatePassword(form.password) : "",
     confirmPassword: touched.confirmPassword
       ? validateConfirmPassword(form.password, form.confirmPassword)
@@ -99,9 +98,10 @@ export default function SignUpPage() {
         회원가입
       </div>
 
-      <TextField label="아이디" htmlFor="email">
+      <TextField id="email">
+        <TextField.Label>아이디</TextField.Label>
         <div className="flex gap-2">
-          <TextFieldInput
+          <TextField.Input
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
             onBlur={() => {
@@ -109,9 +109,8 @@ export default function SignUpPage() {
             }}
             className="flex-1"
             type="email"
-            id="email"
             placeholder="이메일 주소 형식으로 입력해 주세요."
-            variant={"default"}
+            state={errors.email ? "error" : "default"}
           />
           <Button
             onClick={handleCheckEmail}
@@ -122,23 +121,26 @@ export default function SignUpPage() {
             중복 확인
           </Button>
         </div>
+
         {errors.email && (
-          <p className="text-secondary-negative pt-2 text-[12px] leading-4 font-medium">
+          <TextField.HelperText status={"error"}>
             {errors.email}
-          </p>
+          </TextField.HelperText>
         )}
-        {
-          <p
-            className={`pt-2 text-[12px] leading-4 font-medium ${isEmailChecked.available ? "text-green-500" : "text-red-500"}`}
+        {!errors.email && isEmailChecked.message && (
+          <TextField.HelperText
+            status={isEmailChecked.available ? "success" : "error"}
           >
             {isEmailChecked.message}
-          </p>
-        }
+          </TextField.HelperText>
+        )}
       </TextField>
 
-      <TextField label="닉네임" htmlFor="nickname">
+      <TextField id="nickname">
+        <TextField.Label>닉네임</TextField.Label>
+
         <div className="flex gap-2">
-          <TextFieldInput
+          <TextField.Input
             value={form.nickname}
             onChange={(e) => setForm({ ...form, nickname: e.target.value })}
             onBlur={() => {
@@ -146,9 +148,8 @@ export default function SignUpPage() {
             }}
             className="flex-1"
             type="text"
-            id="nickname"
             placeholder="닉네임을 입력해 주세요."
-            variant={"default"}
+            state={errors.nickname ? "error" : "default"}
           />
           <Button
             onClick={handleCheckNickname}
@@ -160,43 +161,46 @@ export default function SignUpPage() {
           </Button>
         </div>
         {errors.nickname && (
-          <p className="text-secondary-negative pt-2 text-[12px] leading-4 font-medium">
+          <TextField.HelperText status={"error"}>
             {errors.nickname}
-          </p>
+          </TextField.HelperText>
         )}
-        {
-          <p
-            className={`pt-2 text-[12px] leading-4 font-medium ${isNicknameChecked.available ? "text-green-500" : "text-red-500"}`}
+        {!errors.nickname && isNicknameChecked.message && (
+          <TextField.HelperText
+            status={isNicknameChecked.available ? "success" : "error"}
           >
             {isNicknameChecked.message}
-          </p>
-        }
+          </TextField.HelperText>
+        )}
       </TextField>
 
-      <TextField label="비밀번호" htmlFor="password">
+      <TextField id="password">
+        <TextField.Label>비밀번호</TextField.Label>
+
         <div className="flex gap-2">
-          <TextFieldInput
+          <TextField.Input
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             onBlur={() => {
               setTouched((prev) => ({ ...prev, password: true }));
             }}
             type="password"
-            id="password"
             placeholder="비밀번호를 입력해 주세요."
-            variant={"default"}
+            state={errors.password ? "error" : "default"}
           />
         </div>
         {errors.password && (
-          <p className="text-secondary-negative pt-2 text-[12px] leading-4 font-medium">
+          <TextField.HelperText status={"error"}>
             {errors.password}
-          </p>
+          </TextField.HelperText>
         )}
       </TextField>
 
-      <TextField label="비밀번호 확인" htmlFor="confirmPassword">
+      <TextField id="confirmPassword">
+        <TextField.Label>비밀번호 확인</TextField.Label>
+
         <div className="flex gap-2">
-          <TextFieldInput
+          <TextField.Input
             value={form.confirmPassword}
             onChange={(e) =>
               setForm({ ...form, confirmPassword: e.target.value })
@@ -205,15 +209,14 @@ export default function SignUpPage() {
               setTouched((prev) => ({ ...prev, confirmPassword: true }));
             }}
             type="password"
-            id="confirmPassword"
             placeholder="비밀번호를 다시 입력해 주세요."
-            variant={"default"}
+            state={errors.confirmPassword ? "error" : "default"}
           />
         </div>
         {errors.confirmPassword && (
-          <p className="text-secondary-negative pt-2 text-[12px] leading-4 font-medium">
+          <TextField.HelperText status={"error"}>
             {errors.confirmPassword}
-          </p>
+          </TextField.HelperText>
         )}
       </TextField>
 

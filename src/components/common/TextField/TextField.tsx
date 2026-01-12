@@ -1,27 +1,32 @@
 import type { ReactNode } from "react";
 import cn from "../../../utils/cn";
+import { TextFieldContext } from "./TextFieldContext";
+import TextFieldLabel from "./TextFieldLabel";
+import TextFieldInput from "./TextFieldInput";
+import TextFieldHelperText from "./TextFieldHelperText";
 
 interface TextFieldProps {
-  label: string;
-  htmlFor: string;
-  className?: string;
+  id: string;
+  disabled?: boolean;
   children: ReactNode;
+  className?: string;
 }
 
 export default function TextField({
-  label,
-  htmlFor,
+  id,
+  disabled,
   className,
   children,
 }: TextFieldProps) {
   return (
-    <div className={cn("flex w-105 flex-col gap-2", className)}>
-      {label && (
-        <label htmlFor={htmlFor} className="text-sm font-medium text-gray-600">
-          {label}
-        </label>
-      )}
-      {children}
-    </div>
+    <TextFieldContext.Provider value={{ id, disabled }}>
+      <div className={cn("flex w-105 flex-col gap-2", className)}>
+        {children}
+      </div>
+    </TextFieldContext.Provider>
   );
 }
+
+TextField.Label = TextFieldLabel;
+TextField.Input = TextFieldInput;
+TextField.HelperText = TextFieldHelperText;

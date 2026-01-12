@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import StackItem from "../components/stack-item";
-import { useState, type ChangeEvent } from "react";
+import { useState } from "react";
 import ProfileImage from "../components/profile/profile-image";
 import { type PurposeEnum, type Purpose, type TechStack } from "../types";
 import { useCreateTechStack } from "../hooks/mutations/tech-stacks/use-create-tech-stacks";
@@ -131,15 +131,16 @@ export default function ProfileDetailPage() {
         className="w-105"
       />
 
-      <TextField label="공부 목표" htmlFor="studyGoal">
-        <TextFieldInput
+      <TextField id="studyGoal">
+        <TextField.Label>공부 목표</TextField.Label>
+        <TextField.Input
           value={profileForm.goal}
           onChange={(e) =>
             setProfileForm((prev) => ({ ...prev, goal: e.target.value }))
           }
           id="studyGoal"
           placeholder="공부 목표를 입력해 주세요."
-          variant={"default"}
+          // variant={"default"}
         />
       </TextField>
 
