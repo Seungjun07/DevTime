@@ -1,7 +1,8 @@
+import type { Task } from "../types";
 import { getAccessToken } from "../utils/token";
 import { API_BASE_URL } from "./api";
 
-export async function createTimer(todayGoal: string, tasks: string[]) {
+export async function createTimer(todayGoal: string, tasks: Task[]) {
   const accessToken = getAccessToken();
 
   if (!accessToken) throw new Error("로그인 필요");
@@ -14,7 +15,7 @@ export async function createTimer(todayGoal: string, tasks: string[]) {
     },
     body: JSON.stringify({
       todayGoal,
-      tasks,
+      tasks: tasks.map((task) => task.content),
     }),
   });
 
