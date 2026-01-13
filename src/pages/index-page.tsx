@@ -23,6 +23,7 @@ import enabledFinishIcon from "./../assets/Finish-enabled.png";
 import resetIcon from "./../assets/Reset.png";
 import todoIcon from "./../assets/TODO.png";
 import { useTimer } from "../hooks/use-timer";
+import { useModalStore } from "../store/modals";
 
 // type TaskModalType = "CREATE" | "UPDATE" | "FINISH" | null;
 
@@ -34,6 +35,7 @@ export default function IndexPage() {
   const accessToken = useAuthStore((state) => state.accessToken);
   const logout = useAuthStore((state) => state.actions.logout);
 
+  const { openConfirmModal, openCustomModal } = useModalStore();
   const [isCreateTodosModalOpen, setIsCreateTodosModalOpen] = useState(false);
   const [isUpdateTodosModalOpen, setIsUpdateTodosModalOpen] = useState(false);
   const [isStopTodosModalOpen, setIsStopTodosModalOpen] = useState(false);
@@ -62,10 +64,21 @@ export default function IndexPage() {
 
   function handleStartTimerClick() {
     if (!isLogin) {
-      setShowLoginModal(true);
-    } else {
-      setIsCreateTodosModalOpen(true);
+      openConfirmModal({
+        title: "로그인이 필요합니다.",
+        description:
+          "DevTime을 사용하려면 로그인이 필요합니다. 로그인 페이지로 이동할까요?",
+        onConfirm: () => {
+          navigate("/sign-in");
+        },
+
+        cancelText: "취소",
+        confirmText: "로그인하기",
+      });
+      return;
     }
+
+    openCustomModal({ type: "START_TIMER" });
   }
 
   const formatTime = (sec: number) => {
@@ -82,20 +95,12 @@ export default function IndexPage() {
 
   const { hour, minute, s } = formatTime(seconds);
 
-  function handleModalClose() {
-    setShowLoginModal(false);
-  }
-  function handleMoveToSignIn() {
-    setShowLoginModal(false);
-    navigate("/sign-in");
-  }
-
   const { mutate: deleteTimer, isPending: isDeleteTimerPending } =
     useDeleteTimer();
 
   function handleResetClick() {
-    deleteTimer(timerId);
     resetTimer();
+    deleteTimer(timerId);
   }
 
   const {
@@ -155,6 +160,7 @@ export default function IndexPage() {
             <button
               className="cursor-pointer"
               onClick={() => {
+                handleResetClick();
                 setIsStopTodosModalOpen(true);
               }}
               disabled={!timerId}
@@ -198,7 +204,7 @@ export default function IndexPage() {
         </div>
       </div>
 
-      {!timerId && isCreateTodosModalOpen && (
+      {/* {!timerId && isCreateTodosModalOpen && (
         <TaskModalLayout>
           <CreateTasks
             onClose={() => setIsCreateTodosModalOpen(false)}
@@ -206,7 +212,7 @@ export default function IndexPage() {
             type="CREATE"
           />
         </TaskModalLayout>
-      )}
+      )} */}
       {isUpdateTodosModalOpen && (
         <TaskModalLayout>
           <ManageTodos
@@ -226,14 +232,6 @@ export default function IndexPage() {
           />
         </TaskModalLayout>
       )}
-      <Dialog
-        isOpen={showLoginModal}
-        title="로그인이 필요합니다."
-        description="DevTime을 사용하려면 로그인이 필요합니다. 로그인 페이지로 이동할까요?"
-        onCancel={handleModalClose}
-        onConfirm={handleMoveToSignIn}
-        confirmText="로그인하기"
-      />
     </div>
   );
 }

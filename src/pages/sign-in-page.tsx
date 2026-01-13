@@ -12,7 +12,7 @@ import { validateEmail, validatePassword } from "../utils/validate";
 import { useModalStore } from "../store/modals";
 
 export default function SignInPage() {
-  const { openModal } = useModalStore();
+  const { openConfirmModal, openAlertModal } = useModalStore();
 
   const navigate = useNavigate();
   const emailRef = useRef<HTMLInputElement>(null);
@@ -37,7 +37,7 @@ export default function SignInPage() {
   const { mutate: signIn, isPending } = useSignIn({
     onSuccess: (data) => {
       if (data.isDuplicateLogin) {
-        openModal("CONFIRM", {
+        openConfirmModal({
           title: "중복 로그인이 불가능합니다.",
           description:
             "다른 기기에 중복 로그인 한 상태입니다. [확인] 버튼을 누르면 다른 기기에서 강제 로그아웃되며, 진행중이던 타이머가 있다면 기록이 자동 삭제됩니다.",
@@ -54,7 +54,7 @@ export default function SignInPage() {
     },
     onError: (data) => {
       if (!data.success) {
-        openModal("CONFIRM", {
+        openAlertModal({
           title: "로그인 정보를 다시 확인해 주세요.",
           confirmText: "확인",
         });

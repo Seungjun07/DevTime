@@ -2,25 +2,29 @@ import { Link, Outlet, useNavigate } from "react-router-dom";
 import logo from "./../assets/logo.svg";
 import Profile from "../components/profile";
 import { useAuthStore } from "../store/auth";
-import { useEffect, useState } from "react";
-import SignInAlertModal from "../components/modal/sign-in-alert-modal";
+import { useModalStore } from "../store/modals";
 export default function GlobalLayout() {
   const isLogin = useAuthStore((state) => state.isLogin);
+  const { openConfirmModal } = useModalStore();
 
   const navigate = useNavigate();
-  const [openModal, setOpenModal] = useState(false);
 
   function handleNavClick(path: string) {
     if (!isLogin) {
-      setOpenModal(true);
+      openConfirmModal({
+        title: "로그인이 필요합니다.",
+        description:
+          "DevTime을 사용하려면 로그인이 필요합니다. 로그인 페이지로 이동할까요?",
+        onConfirm: () => {
+          navigate("/sign-in");
+        },
+        cancelText: "취소",
+        confirmText: "로그인하기",
+      });
       return;
     }
 
     navigate(path);
-  }
-
-  function handleModalClose() {
-    setOpenModal(false);
   }
 
   return (
@@ -43,7 +47,6 @@ export default function GlobalLayout() {
             >
               랭킹
             </button>
-            {openModal && <SignInAlertModal close={handleModalClose} />}
           </div>
         </div>
 
