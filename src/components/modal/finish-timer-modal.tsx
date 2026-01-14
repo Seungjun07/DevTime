@@ -6,10 +6,10 @@ import { useTasksData } from "../../hooks/queries/use-tasks-data";
 import { useTimer } from "../../hooks/use-timer";
 import { useDeleteTimer } from "../../hooks/mutations/timer/use-delete-timer";
 import useTasks from "../../hooks/use-tasks";
-import { API_BASE_URL } from "../../api/api";
 import TaskList from "../task/task-list";
 import Button from "../common/Button";
 import { getAccessToken } from "../../utils/token";
+import { stopTimer } from "../../api/timer";
 
 interface ModalProps {
   open: boolean;
@@ -24,7 +24,7 @@ export default function FinishTimerModal({ onClose, open }: ModalProps) {
 
   const isDisabled = studyReview.length < 15;
 
-  const { splitTimes } = useTimer(timerId);
+  const { splitTimes, resetTimer } = useTimer();
 
   const { tasks, setTasks, addTask, updateTask, removeTask, toggleTask } =
     useTasks();
@@ -41,33 +41,13 @@ export default function FinishTimerModal({ onClose, open }: ModalProps) {
     }
   }, [tasksFromServer]);
 
-  async function stopTimer() {
+  async function finishTimer() {
     try {
-      if (!accessToken) throw new Error("로그인 필요");
+      const data = await stopTimer(timerId, splitTimes, studyReview, tasks);
 
-      const response = await fetch(
-        `${API_BASE_URL}/api/timers/${timerId}/stop`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            timerId,
-            splitTimes,
-            review: studyReview,
-            tasks: tasks,
-          }),
-        },
-      );
-
-      if (!response.ok) throw new Error("타이머 종료 실패");
-      const data = await response.json();
       deleteTimer(timerId);
 
-      localStorage.removeItem("timerId");
-      localStorage.removeItem("studyLogId");
+      resetTimer();
 
       console.log("타이머 종료", data);
     } catch (error) {
@@ -80,7 +60,7 @@ export default function FinishTimerModal({ onClose, open }: ModalProps) {
   }
 
   function handleFinish() {
-    stopTimer();
+    finishTimer();
     onClose();
   }
 

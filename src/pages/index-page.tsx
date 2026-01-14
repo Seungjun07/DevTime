@@ -29,9 +29,10 @@ export default function IndexPage() {
     splitTimes,
     fetchTimer,
     startTimer,
+    resumeTimer,
     pauseTimer,
     resetTimer,
-  } = useTimer(timerId);
+  } = useTimer();
 
   useEffect(() => {
     if (!accessToken) {
@@ -57,7 +58,7 @@ export default function IndexPage() {
     }
 
     if (timerId) {
-      startTimer();
+      resumeTimer();
       return;
     }
 

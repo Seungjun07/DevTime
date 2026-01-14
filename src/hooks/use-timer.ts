@@ -1,14 +1,18 @@
 import { useEffect, useRef, useState } from "react";
-import type { SplitTime } from "../types";
+import type { SplitTime, Task } from "../types";
 import { getAccessToken } from "../utils/token";
 import { API_BASE_URL } from "../api/api";
+import { createTimer } from "../api/timer";
+import { useTimerStore } from "../store/timer";
 
-export function useTimer(timerId: string | null) {
+export function useTimer() {
+  const timerId = JSON.parse(localStorage.getItem("timerId")!);
   const [seconds, setSeconds] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [splitTimes, setSplitTimes] = useState<SplitTime[]>([]);
   const [startTime, setStartTime] = useState<Date | null>(null);
 
+  // const { startTimer } = useTimerStore();
   const intervalRef = useRef<number | null>(null);
   const pollingRef = useRef<number | null>(null); //10분 주기
 
@@ -109,14 +113,11 @@ export function useTimer(timerId: string | null) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          timerId,
           splitTimes,
         }),
       });
 
       if (!response.ok) throw new Error("타이머 불러오기 실패");
-
-      // const data = await response.json();
     } catch (error) {
       console.log(error);
     }
@@ -136,11 +137,33 @@ export function useTimer(timerId: string | null) {
     }
   };
 
-  const startTimer = () => {
+  const startTimer = async (todayGoal: string, tasks: Task[]) => {
+    if (!todayGoal.trim() || tasks.length === 0) return;
+
+    try {
+      const data = await createTimer(todayGoal, tasks);
+      localStorage.setItem("timerId", JSON.stringify(data.timerId));
+      localStorage.setItem("studyLogId", JSON.stringify(data.studyLogId));
+
+      const start = new Date(data.startTime);
+      setStartTime(start);
+      setSeconds(0);
+      setIsRunning(true);
+
+      intervalRef.current = window.setInterval(
+        () => setSeconds((prev) => prev + 1),
+        1000,
+      );
+      startPolling();
+    } catch (error) {
+      console.log("타이머 시작 실패", error);
+    }
+  };
+
+  const resumeTimer = () => {
     if (!isRunning) {
       setIsRunning(true);
-      const now = new Date();
-      setStartTime(now);
+
       intervalRef.current = window.setInterval(
         () => setSeconds((prev) => prev + 1),
         1000,
@@ -148,7 +171,17 @@ export function useTimer(timerId: string | null) {
       startPolling();
     }
   };
+  // if (!isRunning) {
+  //   const now = new Date();
+  //   setStartTime(now);
+  //   intervalRef.current = window.setInterval(
+  //     () => setSeconds((prev) => prev + 1),
+  //     1000,
+  //   );
+  // }
+  // const pause = async ()=>{
 
+  // }
   const pauseTimer = async () => {
     if (isRunning && startTime) {
       const now = new Date();
@@ -159,23 +192,19 @@ export function useTimer(timerId: string | null) {
     if (intervalRef.current) clearInterval(intervalRef.current!);
 
     stopPolling();
+
     await updateTimer();
   };
 
   const resetTimer = () => {
-    clearInterval(intervalRef.current!);
+    if (intervalRef.current) clearInterval(intervalRef.current!);
     setIsRunning(false);
     setSeconds(0);
+    setSplitTimes([]);
+    setStartTime(null);
     localStorage.removeItem("timerId");
     localStorage.removeItem("studyLogId");
   };
-
-  useEffect(() => {
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      stopPolling();
-    };
-  }, []);
 
   return {
     seconds,
@@ -183,6 +212,7 @@ export function useTimer(timerId: string | null) {
     splitTimes,
     fetchTimer,
     startTimer,
+    resumeTimer,
     pauseTimer,
     resetTimer,
     setSplitTimes,
