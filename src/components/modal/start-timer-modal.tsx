@@ -6,8 +6,6 @@ import TaskList from "../task/task-list";
 import TaskEditor from "../task/task-editor";
 import useTasks from "../../hooks/use-tasks";
 import { createTimer } from "../../api/timer";
-// import { useTimerStore } from "../../../store/timer";
-import { useTimer } from "../../hooks/use-timer";
 
 interface ModalProps {
   open: boolean;
@@ -16,8 +14,6 @@ interface ModalProps {
 
 export default function StartTimderModal({ open, onClose }: ModalProps) {
   const { tasks, addTask, updateTask, removeTask } = useTasks();
-  // const { timerId, startTimer, seconds, tick, startTime } = useTimerStore();
-  // const { startTimer } = useTimer();
   const [goal, setGoal] = useState("");
 
   const isDisabled = tasks.length === 0 || !goal.trim();
@@ -27,7 +23,6 @@ export default function StartTimderModal({ open, onClose }: ModalProps) {
 
     try {
       const data = await createTimer(goal, tasks);
-      console.log("click");
       localStorage.setItem("timerId", JSON.stringify(data.timerId));
       localStorage.setItem("studyLogId", JSON.stringify(data.studyLogId));
 

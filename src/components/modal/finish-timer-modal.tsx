@@ -79,6 +79,11 @@ export default function FinishTimerModal({ onClose, open }: ModalProps) {
     setIsEditMode(true);
   }
 
+  function handleFinish() {
+    stopTimer();
+    onClose();
+  }
+
   return (
     <Dialog isOpen={open} onClose={onClose} className="w-160 p-9 pt-12">
       <div className="flex flex-col gap-1">
@@ -130,9 +135,7 @@ export default function FinishTimerModal({ onClose, open }: ModalProps) {
         </Button>
         <Button
           disabled={isDisabled}
-          onClick={() => {
-            stopTimer();
-          }}
+          onClick={handleFinish}
           variant={"secondary"}
           size={"lg"}
         >

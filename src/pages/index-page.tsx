@@ -1,23 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/auth";
 import { useDeleteTimer } from "../hooks/mutations/timer/use-delete-timer";
 import { useProfileData } from "../hooks/queries/use-profile-data";
 
-import StudyTimer from "../components/timer/study-timer";
-// import ManageTodos from "../components/modal/task/manage-todos";
-// import StopTodosModal from "../components/modal/task/stop-todos-modal";
+import StudyTimer from "../components/timer/timer-display";
 
-import startIcon from "./../assets/Start.png";
-import enabledStartIcon from "./../assets/Start-enabled.png";
-import pauseIcon from "./../assets/Pause.png";
-import enabledPauseIcon from "./../assets/Pause-enabled.png";
-import finishIcon from "./../assets/Finish.png";
-import enabledFinishIcon from "./../assets/Finish-enabled.png";
-import resetIcon from "./../assets/Reset.png";
-import todoIcon from "./../assets/TODO.png";
 import { useTimer } from "../hooks/use-timer";
 import { useModalStore } from "../store/modals";
+import TimerDisplay from "../components/timer/timer-display";
+import TimerControls from "../components/timer/timer-controls";
 
 export default function IndexPage() {
   const navigate = useNavigate();
@@ -27,8 +19,6 @@ export default function IndexPage() {
   const logout = useAuthStore((state) => state.actions.logout);
 
   const { openConfirmModal, openCustomModal } = useModalStore();
-
-  const [isLoading, setIsLoading] = useState(false);
 
   const storedTimer = localStorage.getItem("timerId");
   const timerId = storedTimer ? JSON.parse(storedTimer) : null;
@@ -49,7 +39,8 @@ export default function IndexPage() {
     }
   }, []);
 
-  function handleStartTimerClick() {
+  // 타이머 컨트롤 함수
+  function handleStartTimer() {
     if (!isLogin) {
       openConfirmModal({
         title: "로그인이 필요합니다.",
@@ -65,26 +56,17 @@ export default function IndexPage() {
       return;
     }
 
+    if (timerId) {
+      startTimer();
+      return;
+    }
+
     openCustomModal({ type: "START_TIMER" });
   }
 
-  function handleTaskListClick() {
+  function handleTaskList() {
     openCustomModal({ type: "MANAGE_TASK" });
   }
-
-  const formatTime = (sec: number) => {
-    const hour = Math.floor(sec / 3600)
-      .toString()
-      .padStart(2, "0");
-    const minute = Math.floor((sec % 3600) / 60)
-      .toString()
-      .padStart(2, "0");
-    const s = (sec % 60).toString().padStart(2, "0");
-
-    return { hour, minute, s };
-  };
-
-  const { hour, minute, s } = formatTime(seconds);
 
   const { mutate: deleteTimer, isPending: isDeleteTimerPending } =
     useDeleteTimer();
@@ -104,7 +86,6 @@ export default function IndexPage() {
     error: profileError,
   } = useProfileData();
 
-  if (isLoading) return <div>로딩 중...</div>;
   return (
     <div>
       {isLogin ? (
@@ -123,76 +104,16 @@ export default function IndexPage() {
       )}
 
       <div className="m-auto flex w-258 flex-col gap-20">
-        <StudyTimer hour={hour} minute={minute} s={s} />
-
-        <div className="relative flex items-center gap-[134px]">
-          <div className="m-auto flex items-end justify-end gap-20">
-            <button
-              className="cursor-pointer"
-              onClick={() => {
-                if (timerId) {
-                  startTimer();
-                } else {
-                  handleStartTimerClick();
-                }
-              }}
-            >
-              <img
-                src={isRunning ? enabledStartIcon : startIcon}
-                alt="타이머 시작 버튼"
-              />
-            </button>
-            <button
-              className="cursor-pointer"
-              onClick={pauseTimer}
-              disabled={!timerId}
-            >
-              <img
-                src={isRunning ? pauseIcon : enabledPauseIcon}
-                alt="타이머 중지 버튼"
-              />
-            </button>
-            <button
-              className="cursor-pointer"
-              onClick={handleFinishClick}
-              disabled={!timerId}
-            >
-              <img
-                src={seconds ? finishIcon : enabledFinishIcon}
-                alt="타이머 종료 버튼"
-              />
-            </button>
-          </div>
-
-          {timerId && (
-            <div className="absolute right-0 flex gap-6">
-              <button
-                onClick={handleTaskListClick}
-                title="할 일 목록"
-                className="h-16 w-16 cursor-pointer rounded-4xl bg-white p-2"
-              >
-                <img
-                  src={todoIcon}
-                  className="object-cover"
-                  alt="할 일 목록 아이콘"
-                />
-              </button>
-              <button
-                title="초기화"
-                onClick={() => {
-                  handleResetClick();
-                }}
-                className="h-16 w-16 cursor-pointer rounded-4xl bg-white p-2"
-              >
-                <img
-                  src={resetIcon}
-                  className="object-cover"
-                  alt="초기화 아이콘"
-                />
-              </button>
-            </div>
-          )}
-        </div>
+        <TimerDisplay time={seconds} />
+        <TimerControls
+          seconds={seconds}
+          isRunning={isRunning}
+          onStart={handleStartTimer}
+          onPause={pauseTimer}
+          onFinish={handleFinishClick}
+          onReset={handleResetClick}
+          onOpenTask={handleTaskList}
+        />
       </div>
     </div>
   );
