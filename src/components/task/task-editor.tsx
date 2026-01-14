@@ -4,9 +4,10 @@ import TextField from "../common/TextField/TextField";
 
 interface TaskEditorProps {
   onAdd: (content: string) => void;
+  label?: string;
 }
 
-export default function TaskEditor({ onAdd }: TaskEditorProps) {
+export default function TaskEditor({ onAdd, label }: TaskEditorProps) {
   const [task, setTask] = useState("");
 
   function handleAddTask() {
@@ -18,7 +19,7 @@ export default function TaskEditor({ onAdd }: TaskEditorProps) {
   return (
     <div className="w-142">
       <TextField id="task" className="w-full">
-        <TextField.Label>할 일 목록</TextField.Label>
+        {label && <TextField.Label>할 일 목록</TextField.Label>}
         <div className="relative">
           <TextField.Input
             id="todo"

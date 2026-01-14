@@ -11,8 +11,8 @@ import StudyTimer from "../components/timer/study-timer";
 import TaskModalLayout from "../components/modal/task/task-modal-layout";
 import CreateTasks from "../components/modal/task/create-tasks";
 import Dialog from "../components/common/Dialog/Dialog";
-import ManageTodos from "../components/modal/task/manage-todos";
-import StopTodosModal from "../components/modal/task/stop-todos-modal";
+// import ManageTodos from "../components/modal/task/manage-todos";
+// import StopTodosModal from "../components/modal/task/stop-todos-modal";
 
 import startIcon from "./../assets/Start.png";
 import enabledStartIcon from "./../assets/Start-enabled.png";
@@ -81,6 +81,10 @@ export default function IndexPage() {
     openCustomModal({ type: "START_TIMER" });
   }
 
+  function handleTaskListClick() {
+    openCustomModal({ type: "MANAGE_TASK" });
+  }
+
   const formatTime = (sec: number) => {
     const hour = Math.floor(sec / 3600)
       .toString()
@@ -101,6 +105,10 @@ export default function IndexPage() {
   function handleResetClick() {
     resetTimer();
     deleteTimer(timerId);
+  }
+
+  function handleFinishClick() {
+    openCustomModal({ type: "FINISH_TIMER" });
   }
 
   const {
@@ -159,10 +167,7 @@ export default function IndexPage() {
             </button>
             <button
               className="cursor-pointer"
-              onClick={() => {
-                handleResetClick();
-                setIsStopTodosModalOpen(true);
-              }}
+              onClick={handleFinishClick}
               disabled={!timerId}
             >
               <img
@@ -175,7 +180,7 @@ export default function IndexPage() {
           {timerId && (
             <div className="absolute right-0 flex gap-6">
               <button
-                onClick={() => setIsUpdateTodosModalOpen(true)}
+                onClick={handleTaskListClick}
                 title="할 일 목록"
                 className="h-16 w-16 cursor-pointer rounded-4xl bg-white p-2"
               >
@@ -213,16 +218,16 @@ export default function IndexPage() {
           />
         </TaskModalLayout>
       )} */}
-      {isUpdateTodosModalOpen && (
+      {/* {isUpdateTodosModalOpen && (
         <TaskModalLayout>
           <ManageTodos
             onClose={() => setIsUpdateTodosModalOpen(false)}
             type="UPDATE"
           />
         </TaskModalLayout>
-      )}
+      )} */}
 
-      {isStopTodosModalOpen && (
+      {/* {isStopTodosModalOpen && (
         <TaskModalLayout>
           <StopTodosModal
             onClose={() => setIsStopTodosModalOpen(false)}
@@ -231,7 +236,7 @@ export default function IndexPage() {
             type="FINISH"
           />
         </TaskModalLayout>
-      )}
+      )} */}
     </div>
   );
 }

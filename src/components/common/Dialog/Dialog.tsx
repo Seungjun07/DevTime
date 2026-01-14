@@ -42,12 +42,3 @@ Dialog.Content = Content;
 Dialog.Header = Header;
 Dialog.Description = Description;
 Dialog.Footer = Footer;
-
-{
-  /* <Button variant={"tertiary"} size={"lg"} onClick={onCancel}>
-            {cancelText}
-          </Button>
-          <Button variant={"primary"} onClick={onConfirm}>
-            {confirmText}
-          </Button> */
-}

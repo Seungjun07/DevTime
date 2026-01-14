@@ -41,5 +41,4 @@ export async function deleteTimer(timerId: string) {
   const data = response.json();
 
   return data;
-  // resetTimer();
 }

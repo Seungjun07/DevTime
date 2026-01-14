@@ -2,7 +2,7 @@ import type { Task } from "../types";
 import { getAccessToken } from "../utils/token";
 import { API_BASE_URL } from "./api";
 
-export async function fetchTasksOnServer(studyLogId: string) {
+export async function fetchTasks(studyLogId: string) {
   const accessToken = getAccessToken();
 
   if (!accessToken) throw new Error("로그인 필요");
