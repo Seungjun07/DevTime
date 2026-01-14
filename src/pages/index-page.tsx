@@ -1,16 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/auth";
 import { useDeleteTimer } from "../hooks/mutations/timer/use-delete-timer";
 import { useProfileData } from "../hooks/queries/use-profile-data";
-import { getAccessToken } from "../utils/token";
-import { API_BASE_URL } from "../api/api";
-import { type SplitTime, type TaskModalType } from "../types";
 
 import StudyTimer from "../components/timer/study-timer";
-import TaskModalLayout from "../components/modal/task/task-modal-layout";
-import CreateTasks from "../components/modal/task/create-tasks";
-import Dialog from "../components/common/Dialog/Dialog";
 // import ManageTodos from "../components/modal/task/manage-todos";
 // import StopTodosModal from "../components/modal/task/stop-todos-modal";
 
@@ -25,10 +19,7 @@ import todoIcon from "./../assets/TODO.png";
 import { useTimer } from "../hooks/use-timer";
 import { useModalStore } from "../store/modals";
 
-// type TaskModalType = "CREATE" | "UPDATE" | "FINISH" | null;
-
 export default function IndexPage() {
-  // const [taskModal, setTaskModal] = useState<TaskModalType>(null);
   const navigate = useNavigate();
 
   const isLogin = useAuthStore((state) => state.isLogin);
@@ -36,10 +27,6 @@ export default function IndexPage() {
   const logout = useAuthStore((state) => state.actions.logout);
 
   const { openConfirmModal, openCustomModal } = useModalStore();
-  const [isCreateTodosModalOpen, setIsCreateTodosModalOpen] = useState(false);
-  const [isUpdateTodosModalOpen, setIsUpdateTodosModalOpen] = useState(false);
-  const [isStopTodosModalOpen, setIsStopTodosModalOpen] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -194,7 +181,6 @@ export default function IndexPage() {
                 title="초기화"
                 onClick={() => {
                   handleResetClick();
-                  setIsCreateTodosModalOpen(false);
                 }}
                 className="h-16 w-16 cursor-pointer rounded-4xl bg-white p-2"
               >
@@ -208,35 +194,6 @@ export default function IndexPage() {
           )}
         </div>
       </div>
-
-      {/* {!timerId && isCreateTodosModalOpen && (
-        <TaskModalLayout>
-          <CreateTasks
-            onClose={() => setIsCreateTodosModalOpen(false)}
-            onStart={() => startTimer()}
-            type="CREATE"
-          />
-        </TaskModalLayout>
-      )} */}
-      {/* {isUpdateTodosModalOpen && (
-        <TaskModalLayout>
-          <ManageTodos
-            onClose={() => setIsUpdateTodosModalOpen(false)}
-            type="UPDATE"
-          />
-        </TaskModalLayout>
-      )} */}
-
-      {/* {isStopTodosModalOpen && (
-        <TaskModalLayout>
-          <StopTodosModal
-            onClose={() => setIsStopTodosModalOpen(false)}
-            splitTimes={splitTimes}
-            deleteTimer={resetTimer}
-            type="FINISH"
-          />
-        </TaskModalLayout>
-      )} */}
     </div>
   );
 }

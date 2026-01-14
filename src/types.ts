@@ -43,22 +43,11 @@ export interface SplitTime {
   timeSpent: number;
 }
 
-export interface TimerPayLoad {
-  timerId: string;
-  splitTimes: SplitTime[];
-}
-
 export interface Task {
   id: string;
   content: string;
   isCompleted: boolean;
 }
-
-export interface TaskResponse {
-  task: Task[];
-}
-
-export type TaskModalType = "CREATE" | "EDIT" | "FINISH" | "UPDATE";
 
 export interface MyProfile {
   email: string;
