@@ -1,28 +1,17 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { useCheckNickname } from "../hooks/queries/use-check-nickname";
-import { checkEmail, signUp } from "../api/sign-up";
-import Button from "../components/common/Button";
-import TextFieldInput from "../components/common/TextField/TextFieldInput";
-import TextField from "../components/common/TextField/TextField";
+import { Link } from "react-router-dom";
 import { TERMS } from "../constant";
+import { useEffect, useState } from "react";
+import Button from "../components/common/Button";
+import TextField from "../components/common/TextField/TextField";
+import { useSignupMutation } from "../hooks/mutations/signup/useSignUpMutation";
 import {
-  validateConfirmPassword,
-  validateEmail,
-  validateNickname,
-  validatePassword,
-} from "../utils/validate";
-import type { SignUpFormState } from "../types";
+  useCheckEmail,
+  useCheckNickname,
+} from "../hooks/queries/useSignUpQueries";
+import { useSignUpForm } from "../features/signup/hooks/useSignUpForm";
 
 export default function SignUpPage() {
-  const navigate = useNavigate();
-
-  const [form, setForm] = useState<SignUpFormState>({
-    email: "",
-    nickname: "",
-    password: "",
-    confirmPassword: "",
-  });
+  const { values, errors, isValid, handleChange, handleBlur } = useSignUpForm();
 
   const [isEmailChecked, setIsEmailChecked] = useState({
     available: false,
@@ -33,63 +22,40 @@ export default function SignUpPage() {
     message: "",
   });
 
-  const [touched, setTouched] = useState({
-    email: false,
-    nickname: false,
-    password: false,
-    confirmPassword: false,
-  });
+  const { mutate: signUp, isPending: isSignUpPending } = useSignupMutation();
+  const { refetch: refetchEmail } = useCheckEmail(values.email);
+  const { refetch: refetchNickname } = useCheckNickname(values.nickname);
 
-  const errors = {
-    email: touched.email ? validateEmail(form.email) : "",
-    nickname: touched.nickname ? validateNickname(form.nickname) : "",
-    password: touched.password ? validatePassword(form.password) : "",
-    confirmPassword: touched.confirmPassword
-      ? validateConfirmPassword(form.password, form.confirmPassword)
-      : "",
-  };
+  // 이메일, 닉네임 체크 후 변경 시 초기화
+  useEffect(() => {
+    setIsEmailChecked({ available: false, message: "" });
+  }, [values.email]);
 
-  const isFormValid =
-    form.email &&
-    form.nickname &&
-    form.password &&
-    form.confirmPassword &&
-    !errors.email &&
-    !errors.nickname &&
-    !errors.password &&
-    !errors.confirmPassword;
-
-  async function handleSignUpClick() {
-    if (!isFormValid) return;
-
-    try {
-      const data = await signUp(form);
-
-      if (data) navigate("/sign-in", { replace: true });
-    } catch (error) {
-      console.log(error);
-    }
-  }
+  useEffect(() => {
+    setIsNicknameChecked({ available: false, message: "" });
+  }, [values.nickname]);
 
   async function handleCheckEmail() {
-    try {
-      const data = await checkEmail(form.email);
+    const { data } = await refetchEmail();
 
+    if (data)
       setIsEmailChecked({ available: data.available, message: data.message });
-    } catch (error) {
-      console.log("에러", error);
-    }
   }
 
-  const {
-    // data: nickNameChecked,
-    isLoading,
-    refetch,
-  } = useCheckNickname(form.nickname);
-
   async function handleCheckNickname() {
-    const { data } = await refetch();
-    setIsNicknameChecked(data);
+    const { data } = await refetchNickname();
+
+    if (data)
+      setIsNicknameChecked({
+        available: data.available,
+        message: data.message,
+      });
+  }
+
+  async function handleSignUp() {
+    if (!isValid) return;
+
+    signUp(values);
   }
 
   return (
@@ -102,10 +68,10 @@ export default function SignUpPage() {
         <TextField.Label>아이디</TextField.Label>
         <div className="flex gap-2">
           <TextField.Input
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            value={values.email}
+            onChange={(e) => handleChange("email", e.target.value)}
             onBlur={() => {
-              setTouched((prev) => ({ ...prev, email: true }));
+              handleBlur("email");
             }}
             className="flex-1"
             type="email"
@@ -116,7 +82,7 @@ export default function SignUpPage() {
             onClick={handleCheckEmail}
             variant={"secondary"}
             size={"sm"}
-            disabled={!form.email}
+            disabled={!values.email}
           >
             중복 확인
           </Button>
@@ -141,10 +107,10 @@ export default function SignUpPage() {
 
         <div className="flex gap-2">
           <TextField.Input
-            value={form.nickname}
-            onChange={(e) => setForm({ ...form, nickname: e.target.value })}
+            value={values.nickname}
+            onChange={(e) => handleChange("nickname", e.target.value)}
             onBlur={() => {
-              setTouched((prev) => ({ ...prev, nickname: true }));
+              handleBlur("nickname");
             }}
             className="flex-1"
             type="text"
@@ -155,7 +121,7 @@ export default function SignUpPage() {
             onClick={handleCheckNickname}
             variant={"secondary"}
             size={"sm"}
-            disabled={!form.nickname}
+            disabled={!values.nickname}
           >
             중복 확인
           </Button>
@@ -179,10 +145,10 @@ export default function SignUpPage() {
 
         <div className="flex gap-2">
           <TextField.Input
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            value={values.password}
+            onChange={(e) => handleChange("password", e.target.value)}
             onBlur={() => {
-              setTouched((prev) => ({ ...prev, password: true }));
+              handleBlur("password");
             }}
             type="password"
             placeholder="비밀번호를 입력해 주세요."
@@ -201,12 +167,10 @@ export default function SignUpPage() {
 
         <div className="flex gap-2">
           <TextField.Input
-            value={form.confirmPassword}
-            onChange={(e) =>
-              setForm({ ...form, confirmPassword: e.target.value })
-            }
+            value={values.confirmPassword}
+            onChange={(e) => handleChange("confirmPassword", e.target.value)}
             onBlur={() => {
-              setTouched((prev) => ({ ...prev, confirmPassword: true }));
+              handleBlur("confirmPassword");
             }}
             type="password"
             placeholder="비밀번호를 다시 입력해 주세요."
@@ -228,11 +192,11 @@ export default function SignUpPage() {
       </div>
 
       <Button
-        onClick={handleSignUpClick}
+        onClick={handleSignUp}
         variant={"primary"}
         size={"lg"}
         className="w-105"
-        disabled={!isFormValid}
+        disabled={!isValid || isSignUpPending}
       >
         회원가입
       </Button>
