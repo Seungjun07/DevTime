@@ -103,9 +103,8 @@ export default function SignInPage() {
           <TextField id="password" className="w-82">
             <TextField.Label>비밀번호</TextField.Label>
 
-            <TextFieldInput
+            <TextField.Input
               // ref={emailRef}
-              id="password"
               type="password"
               onBlur={() => handleBlur("password")}
               value={values.password}
