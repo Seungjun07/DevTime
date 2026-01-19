@@ -10,27 +10,15 @@ import TextFieldInput from "../components/common/TextField/TextFieldInput";
 import TextField from "../components/common/TextField/TextField";
 import { validateEmail, validatePassword } from "../utils/validate";
 import { useModalStore } from "../store/modals";
+import { useSignInForm } from "../features/auth/hooks/useSignInForm";
 
 export default function SignInPage() {
+  const navigate = useNavigate();
+
+  const { values, errors, isValid, handleChange, handleBlur } = useSignInForm();
   const { openConfirmModal, openAlertModal } = useModalStore();
 
-  const navigate = useNavigate();
   const emailRef = useRef<HTMLInputElement>(null);
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const [touched, setTouched] = useState({
-    email: false,
-    password: false,
-  });
-
-  const errors = {
-    email: touched.email ? validateEmail(email) : "",
-    password: touched.password ? validatePassword(password) : "",
-  };
-
-  const isFormValid = email && password && !errors.email && !errors.password;
 
   const setTokens = useAuthStore((state) => state.actions.setTokens);
 
@@ -73,9 +61,9 @@ export default function SignInPage() {
   }
 
   async function handleSignIn() {
-    if (!isFormValid) return;
+    if (!isValid) return;
 
-    signIn({ email, password });
+    signIn({ email: values.email, password: values.password });
   }
 
   return (
@@ -97,9 +85,9 @@ export default function SignInPage() {
             <TextField.Input
               ref={emailRef}
               type="email"
-              onBlur={() => setTouched((prev) => ({ ...prev, email: true }))}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onBlur={() => handleBlur("email")}
+              value={values.email}
+              onChange={(e) => handleChange("email", e.target.value)}
               placeholder={"이메일 주소를 입력해주세요."}
               state={errors.email ? "error" : "default"}
               inputSize={"md"}
@@ -119,9 +107,9 @@ export default function SignInPage() {
               // ref={emailRef}
               id="password"
               type="password"
-              onBlur={() => setTouched((prev) => ({ ...prev, password: true }))}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onBlur={() => handleBlur("password")}
+              value={values.password}
+              onChange={(e) => handleChange("password", e.target.value)}
               placeholder={"비밀번호를 입력해주세요."}
               state={errors.password ? "error" : "default"}
               inputSize={"md"}
@@ -139,7 +127,7 @@ export default function SignInPage() {
             onClick={handleSignIn}
             variant={"primary"}
             size={"login"}
-            disabled={!isFormValid}
+            disabled={!isValid}
           >
             로그인
           </Button>
