@@ -11,12 +11,12 @@ import { useDebounce } from "../hooks/use-debounce";
 import { useTechStackQuery } from "../features/tech-stack/hooks/queries/useTechStackQuery";
 import { useCreateProfile } from "../features/profile/hooks/mutations/useCreateProfile";
 import { useTechStackSelector } from "../features/tech-stack/hooks/useTechStackSelector";
-import { useCreateTechStack } from "../hooks/mutations/tech-stacks/use-create-tech-stacks";
 import type {
   Career,
   Purpose,
   PurposeEnum,
 } from "../features/profile/types/types";
+import { useCreateTechStack } from "../features/tech-stack/hooks/mutations/useCreateTechStack";
 
 export default function ProfileDetailPage() {
   const navigate = useNavigate();

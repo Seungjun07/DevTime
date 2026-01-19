@@ -1,16 +1,14 @@
+import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "./../assets/logo-vertical.svg";
 import symbolLogo from "./../assets/Symbol-Logo.png";
-import { useRef, useState } from "react";
-import { useSignIn } from "../hooks/mutations/auth/use-sign-in";
-import { useAuthStore } from "../store/auth";
 import { type LoginData } from "../types";
 import Button from "../components/common/Button";
-import TextFieldInput from "../components/common/TextField/TextFieldInput";
 import TextField from "../components/common/TextField/TextField";
-import { validateEmail, validatePassword } from "../utils/validate";
+import { useAuthStore } from "../store/auth";
 import { useModalStore } from "../store/modals";
 import { useSignInForm } from "../features/auth/hooks/useSignInForm";
+import { useSignIn } from "../hooks/mutations/auth/use-sign-in";
 
 export default function SignInPage() {
   const navigate = useNavigate();

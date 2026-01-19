@@ -8,6 +8,7 @@ interface TechStackInputProps {
   onChange: (value: string) => void;
   onSelect: (stack: TechStack) => void;
   onCreate: () => void;
+  className?: string;
 }
 
 export default function TechStackInput({
@@ -16,9 +17,10 @@ export default function TechStackInput({
   onChange,
   onCreate,
   onSelect,
+  className,
 }: TechStackInputProps) {
   return (
-    <TextField id="studyStack" className="relative">
+    <TextField id="studyStack" className={`relative ${className}`}>
       <TextField.Label>공부/사용 중인 기술 스택</TextField.Label>
       <TextField.Input
         value={value}
