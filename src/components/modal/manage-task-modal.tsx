@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { useTasksData } from "../../hooks/queries/use-tasks-data";
-import { updateTasksOnServer } from "../../api/todos";
 import type { Task } from "../../types";
 
 import Dialog from "../common/Dialog/Dialog";
 import Button from "../common/Button";
-import TaskHeader from "../task/task-header";
-import TaskEditor from "../task/task-editor";
-import TaskList from "../task/task-list";
 
 import useTasks from "../../hooks/use-tasks";
+import TaskEditor from "../../features/task/components/task-editor";
+import TaskHeader from "../../features/task/components/task-header";
+import TaskList from "../../features/task/components/task-list";
+import { useUpdateTask } from "../../features/task/hooks/useUpdateTask";
 
 interface ModalProps {
   open: boolean;
@@ -50,15 +50,13 @@ export default function ManageTaskModal({ open, onClose }: ModalProps) {
 
   const isDisabled = !isTasksChanged(tasksFromServer, tasks);
 
-  async function updateTasks() {
-    try {
-      const studyLogId = JSON.parse(localStorage.getItem("studyLogId") || "");
+  const { mutate: updateTasks } = useUpdateTask();
 
-      await updateTasksOnServer(studyLogId, tasks);
-      onClose();
-    } catch (error) {
-      console.log(error);
-    }
+  function handleUpdateTask() {
+    const studyLogId = JSON.parse(localStorage.getItem("studyLogId") || "");
+    updateTasks({ studyLogId, tasks });
+
+    onClose();
   }
 
   function editTask() {
@@ -102,7 +100,7 @@ export default function ManageTaskModal({ open, onClose }: ModalProps) {
         ) : (
           <Button
             disabled={isDisabled}
-            onClick={updateTasks}
+            onClick={handleUpdateTask}
             variant={"secondary"}
             size={"lg"}
           >

@@ -22,26 +22,6 @@ export async function fetchProfile() {
   return data;
 }
 
-export async function createProfile(body: CreateProfileForm) {
-  const accessToken = getAccessToken();
-
-  if (!accessToken) throw new Error("로그인 필요");
-
-  const response = await fetch(`${API_BASE_URL}/api/profile`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) throw new Error("프로필 생성 실패");
-  const data = await response.json();
-
-  return data;
-}
-
 export async function updateProfile(body: ProfileForm) {
   const accessToken = getAccessToken();
 

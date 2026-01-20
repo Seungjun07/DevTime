@@ -18,22 +18,3 @@ export async function fetchTasks(studyLogId: string) {
 
   return data.data.tasks;
 }
-
-export async function updateTasksOnServer(studyLogId: string, tasks: Task[]) {
-  const accessToken = getAccessToken();
-
-  if (!accessToken) throw new Error("로그인 필요");
-
-  const response = await fetch(`${API_BASE_URL}/api/${studyLogId}/tasks`, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      tasks,
-    }),
-  });
-
-  if (!response.ok) throw new Error("할 일 수정 실패");
-}

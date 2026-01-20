@@ -9,7 +9,6 @@ import UserInfoLayout from "./layout/user-info-layout";
 import RankingPage from "./pages/ranking-page";
 import ProfileEditPage from "./pages/profile-edit-page";
 import DashboardPage from "./pages/dashboard-page";
-// import Test from "./Test";
 
 export default function RootRoute() {
   return (
@@ -27,7 +26,6 @@ export default function RootRoute() {
         <Route path="/sign-up" element={<SignUpPage />} />
       </Route>
 
-      {/* <Route path="/test" element={<Test />} /> */}
       <Route path="/sign-in" element={<SignInPage />} />
     </Routes>
   );

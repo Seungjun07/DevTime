@@ -34,7 +34,7 @@ export default function BaseModal({
           </Button>
         )}
         {confirmText && (
-          <Button className="flex-1" variant={"primary"} onClick={onConfirm}>
+          <Button variant={"primary"} onClick={onConfirm}>
             {confirmText}
           </Button>
         )}

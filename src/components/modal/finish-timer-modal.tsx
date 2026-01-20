@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import Dialog from "../common/Dialog/Dialog";
-import TaskEditor from "../task/task-editor";
-import TaskHeader from "../task/task-header";
 import { useTasksData } from "../../hooks/queries/use-tasks-data";
 import { useTimer } from "../../hooks/use-timer";
 import { useDeleteTimer } from "../../hooks/mutations/timer/use-delete-timer";
 import useTasks from "../../hooks/use-tasks";
-import TaskList from "../task/task-list";
 import Button from "../common/Button";
 import { getAccessToken } from "../../utils/token";
 import { stopTimer } from "../../api/timer";
+import TaskEditor from "../../features/task/components/task-editor";
+import TaskHeader from "../../features/task/components/task-header";
+import TaskList from "../../features/task/components/task-list";
 
 interface ModalProps {
   open: boolean;

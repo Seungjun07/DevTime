@@ -1,28 +1,25 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import CareerSelect from "../components/form/career-select";
-import StudyPurPoseSelect from "../components/form/study-purpose-select";
-import TextField from "../components/common/TextField/TextField";
-import StudyGoalInput from "../components/form/study-goal-input";
 import ProfileImage from "../components/profile/profile-image";
-import TechStackInput from "../features/tech-stack/components/TechStackInput";
-import TechStackList from "../features/tech-stack/components/TechStackList";
 import { useDebounce } from "../hooks/use-debounce";
-import { useTechStackQuery } from "../features/tech-stack/hooks/queries/useTechStackQuery";
-import { useCreateProfile } from "../features/profile/hooks/mutations/useCreateProfile";
-import { useTechStackSelector } from "../features/tech-stack/hooks/useTechStackSelector";
-import type {
-  Career,
-  Purpose,
-  PurposeEnum,
-} from "../features/profile/types/types";
-import { useCreateTechStack } from "../features/tech-stack/hooks/mutations/useCreateTechStack";
+import TechStackInput from "../features/user/components/tech-stack/TechStackInput";
+import TechStackList from "../features/user/components/tech-stack/TechStackList";
+import { useCreateTechStack } from "../features/user/hooks/mutations/useCreateTechStack";
+import { useTechStackQuery } from "../features/user/hooks/queries/useTechStackQuery";
+import { useTechStackSelector } from "../features/user/hooks/useTechStackSelector";
+import CareerSelect from "../features/user/components/form/CareerSelect";
+import StudyGoalField from "../features/user/components/form/StudyGoalField";
+import StudyPurposeSelect from "../features/user/components/form/StudyPurposeSelect";
+import { useCreateProfile } from "../features/user/hooks/mutations/useCreateProfile";
+import type { Career, PurposeOption } from "../features/user/types/types";
+import type { Purpose } from "../types";
 
 export default function ProfileDetailPage() {
   const navigate = useNavigate();
 
   // profile
   // const { form, setForm, isValid, toProfile } = useProfileForm();
+  const { mutate: createProfile } = useCreateProfile();
 
   // tech-stack
   const { keyword, selected, setKeyword, addStack, deleteStack } =
@@ -35,61 +32,48 @@ export default function ProfileDetailPage() {
     onSuccess: addStack,
   });
 
-  // image file
+  // profile state
+  const [career, setCareer] = useState<Career | "">("");
+  const [purposeSelect, setPurposeSelect] = useState<PurposeOption | "">("");
+  const [purposeDetail, setPurposeDetail] = useState("");
+  const [goal, setGoal] = useState("");
   const [profileImageKey, setProfileImageKey] = useState<string | null>(null);
 
-  const { mutate: createProfile } = useCreateProfile();
-
-  const [profileForm, setProfileForm] = useState({
-    career: "",
-    purpose: "",
-    goal: "",
-  });
-
-  const [purposeSelect, setPurposeSelect] = useState("");
-  const [purposeDetail, setPurposeDetail] = useState("");
+  // 버튼 disabled
+  const isFormValid =
+    career &&
+    goal &&
+    purposeSelect &&
+    (purposeSelect !== "기타" || purposeDetail.trim()) &&
+    selected.length > 0 &&
+    profileImageKey;
 
   function handleCreateTechStack() {
     if (!keyword.trim()) return;
     createTechStack(keyword);
   }
 
-  // 이미지 파일 업로드
-  const isFormValid =
-    profileForm.career &&
-    profileForm.goal &&
-    profileForm.purpose &&
-    selected.length > 0 &&
-    profileImageKey;
-
   const handleSave = () => {
-    if (!profileImageKey) {
-      alert("업로드할 파일을 선택해주세요.");
-      return;
-    }
-    try {
-      const purpose: Purpose =
-        profileForm.purpose === "기타"
-          ? {
-              type: "기타",
-              detail: purposeDetail,
-            }
-          : (purposeSelect as PurposeEnum);
+    if (!career || !goal || !profileImageKey || !purposeSelect) return;
 
-      createProfile({
-        career: profileForm.career as Career,
-        purpose,
-        goal: profileForm.goal,
-        techStacks: selected.map((stack) => stack.name), // 이름 배열
-        profileImage: profileImageKey,
-      });
+    const purpose: Purpose =
+      purposeSelect === "기타"
+        ? {
+            type: "기타",
+            detail: purposeDetail,
+          }
+        : purposeSelect;
 
-      navigate("/");
-    } catch (error) {
-      console.error("업로드 중 오류 발생", error);
-    }
+    createProfile({
+      career,
+      purpose,
+      goal,
+      techStacks: selected.map((stack) => stack.name), // 이름 배열
+      profileImage: profileImageKey,
+    });
+
+    navigate("/");
   };
-  const disabled = !isFormValid;
 
   return (
     <div className="m-auto flex h-[790px] w-[420px] flex-1 flex-col items-center gap-10">
@@ -97,32 +81,22 @@ export default function ProfileDetailPage() {
         프로필 설정
       </div>
 
-      <CareerSelect
-        value={profileForm.career}
-        onChange={(value) =>
-          setProfileForm((prev) => ({ ...prev, career: value }))
-        }
+      <CareerSelect value={career} onChange={setCareer} />
+      <StudyPurposeSelect
+        selectValue={purposeSelect}
+        detailValue={purposeDetail}
+        onSelectChange={(value) => setPurposeSelect(value)}
+        onDetailChange={(value) => setPurposeDetail(value)}
       />
-      <StudyPurPoseSelect
+      {/* <StudyPurPoseSelect
         selectValue={purposeSelect}
         detailValue={purposeDetail}
         onSelectChange={(value) => setPurposeSelect(value)}
         onDetailChange={(value) => setPurposeDetail(value)}
         className="w-105"
-      />
+      /> */}
 
-      <TextField id="studyGoal">
-        <TextField.Label>공부 목표</TextField.Label>
-        <TextField.Input
-          value={profileForm.goal}
-          onChange={(e) =>
-            setProfileForm((prev) => ({ ...prev, goal: e.target.value }))
-          }
-          id="studyGoal"
-          placeholder="공부 목표를 입력해 주세요."
-          // variant={"default"}
-        />
-      </TextField>
+      <StudyGoalField value={goal} onChange={setGoal} />
 
       <div className="flex w-105 flex-col gap-4">
         <TechStackInput
@@ -139,8 +113,8 @@ export default function ProfileDetailPage() {
 
       <button
         onClick={handleSave}
-        disabled={disabled}
-        className={`${disabled ? "bg-disabled-400 text-disabled-300" : "bg-primary-blue text-white"} h-12 w-105 cursor-pointer rounded px-4 py-3 text-lg leading-[22px] font-semibold`}
+        disabled={!isFormValid}
+        className={`${!isFormValid ? "bg-disabled-400 text-disabled-300" : "bg-primary-blue text-white"} h-12 w-105 cursor-pointer rounded px-4 py-3 text-lg leading-[22px] font-semibold`}
       >
         저장하기
       </button>
