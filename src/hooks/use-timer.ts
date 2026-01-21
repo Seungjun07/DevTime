@@ -171,17 +171,7 @@ export function useTimer() {
       startPolling();
     }
   };
-  // if (!isRunning) {
-  //   const now = new Date();
-  //   setStartTime(now);
-  //   intervalRef.current = window.setInterval(
-  //     () => setSeconds((prev) => prev + 1),
-  //     1000,
-  //   );
-  // }
-  // const pause = async ()=>{
 
-  // }
   const pauseTimer = async () => {
     if (isRunning && startTime) {
       const now = new Date();
