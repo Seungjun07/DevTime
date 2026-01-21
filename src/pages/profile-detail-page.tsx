@@ -1,6 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import ProfileImage from "../components/profile/profile-image";
 import { useDebounce } from "../hooks/use-debounce";
 import TechStackInput from "../features/user/components/tech-stack/TechStackInput";
 import TechStackList from "../features/user/components/tech-stack/TechStackList";
@@ -11,8 +10,12 @@ import CareerSelect from "../features/user/components/form/CareerSelect";
 import StudyGoalField from "../features/user/components/form/StudyGoalField";
 import StudyPurposeSelect from "../features/user/components/form/StudyPurposeSelect";
 import { useCreateProfile } from "../features/user/hooks/mutations/useCreateProfile";
-import type { Career, PurposeOption } from "../features/user/types/types";
-import type { Purpose } from "../types";
+import type {
+  Career,
+  Purpose,
+  PurposeOption,
+} from "../features/user/types/types";
+import ProfileImage from "../features/user/components/profile/ProfileImage";
 
 export default function ProfileDetailPage() {
   const navigate = useNavigate();

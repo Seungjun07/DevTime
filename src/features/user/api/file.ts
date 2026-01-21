@@ -1,7 +1,15 @@
-import { getAccessToken } from "../utils/token";
-import { API_BASE_URL } from "./api";
+import { API_BASE_URL } from "../../../api/api";
+import { getAccessToken } from "../../../utils/token";
+import type { PresignedUrlResponse } from "../types/file";
 
-export async function getPresignedUrl(file: File) {
+/**
+ * 이미지 업로드를 위한 Presigned URL 발급
+ * @param file
+ * @returns presignedUrl, key
+ */
+export async function getPresignedUrl(
+  file: File,
+): Promise<PresignedUrlResponse> {
   const accessToken = getAccessToken();
 
   if (!accessToken) throw new Error("로그인 필요");
@@ -23,19 +31,5 @@ export async function getPresignedUrl(file: File) {
 
   const data = await response.json();
 
-  return data; // {presignedUrl, key}
-}
-
-export async function uploadToS3(file: File, presignedUrl: string) {
-  const response = await fetch(presignedUrl, {
-    method: "PUT",
-    headers: {
-      "Content-Type": file.type,
-    },
-    body: file,
-  });
-
-  if (!response.ok) throw new Error("S3 업로드 실패");
-
-  return true;
+  return data;
 }

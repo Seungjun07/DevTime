@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
-import ProfileImage from "../components/profile/profile-image";
 import { useUpdateProfile } from "../hooks/mutations/profile/use-update-profile";
 import { useDebounce } from "../hooks/use-debounce";
-import { IMAGE_URL } from "../constant";
 import { useProfileQuery } from "../features/user/hooks/queries/useProfileQuery";
 import Button from "../components/common/Button";
 import { useCheckNickname } from "../features/signup/hooks/queryies/useSignUpQueries";
@@ -15,8 +13,13 @@ import { useTechStackSelector } from "../features/user/hooks/useTechStackSelecto
 import CareerSelect from "../features/user/components/form/CareerSelect";
 import StudyGoalField from "../features/user/components/form/StudyGoalField";
 import StudyPurposeSelect from "../features/user/components/form/StudyPurposeSelect";
-import type { Career, PurposeOption } from "../features/user/types/types";
-import type { Purpose } from "../types";
+import type {
+  Career,
+  Purpose,
+  PurposeOption,
+} from "../features/user/types/types";
+import ProfileImage from "../features/user/components/profile/ProfileImage";
+import { IMAGE_URL } from "../api/api";
 
 export default function ProfileEditPage() {
   const { data: profile, isLoading: isProfileLoading } = useProfileQuery();

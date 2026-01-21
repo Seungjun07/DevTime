@@ -1,4 +1,4 @@
-import editIcon from "./../../../assets/edit.png";
+import editIcon from "./../../../../assets/edit.png";
 
 interface TaskHeaderProps {
   onEdit: () => void;

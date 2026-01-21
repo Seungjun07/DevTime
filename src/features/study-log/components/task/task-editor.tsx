@@ -1,6 +1,6 @@
 import { useState } from "react";
-import Button from "../../../components/common/Button";
-import TextField from "../../../components/common/TextField/TextField";
+import Button from "../../../../components/common/Button";
+import TextField from "../../../../components/common/TextField/TextField";
 
 interface TaskEditorProps {
   onAdd: (content: string) => void;

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import defaultAvartar from "./../assets/user.png";
 import { useProfileData } from "../hooks/queries/use-profile-data";
 import { useEffect, useState } from "react";
-import { IMAGE_URL } from "../constant";
+import { IMAGE_URL } from "../api/api";
 
 export default function MyPage() {
   const { data: profile, isLoading, error } = useProfileData();

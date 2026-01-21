@@ -1,6 +1,6 @@
 import { API_BASE_URL } from "../../../api/api";
 import { getAccessToken } from "../../../utils/token";
-import type { Task, TaskResponse, UpdateTaskRequest } from "../types";
+import type { TaskResponse, UpdateTaskRequest } from "../types";
 
 /**
  * 할 일 목록 업데이트

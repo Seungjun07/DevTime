@@ -1,9 +1,9 @@
 import StudyHeatmap from "../components/study-heatmap";
-import StudyRecord from "../components/study-record";
 import { getAccessToken } from "../utils/token";
 import WeekdayStudyAverage from "../components/weekday-study-average";
 import { useQuery } from "@tanstack/react-query";
 import { API_BASE_URL } from "../api/api";
+import StudyRecord from "../features/study-log/components/studyLog/StudyLogs";
 
 type StudyData = {
   day: string;

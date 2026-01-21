@@ -1,28 +1,31 @@
 import { useState } from "react";
-import trashIcon from "./../assets/trash.png";
-import { formatDate } from "../lib/date";
-import { formatTime } from "../lib/time";
-import doubleLeftIcon from "./../assets/2chevron-left.png";
-import leftIcon from "./../assets/chevron-left.png";
-import doubleRightIcon from "./../assets/2chevron-right.png";
-import rightIcon from "./../assets/chevron-right.png";
-import { useStudyLogsData } from "../hooks/queries/use-study-logs-data";
-import { useDeleteStudyLogs } from "../hooks/mutations/study-logs/use-delete-study-logs";
+import trashIcon from "./../../../../assets/trash.png";
+import { formatDate } from "../../../../lib/date";
+import { formatTime } from "../../../../lib/time";
+import doubleLeftIcon from "./../../../../assets/2chevron-left.png";
+import leftIcon from "./../../../../assets/chevron-left.png";
+import doubleRightIcon from "./../../../../assets/2chevron-right.png";
+import rightIcon from "./../../../../assets/chevron-right.png";
+import { useStudyLogQuery } from "../../hooks/useStudyLogQuery";
+import { useDeleteStudyLog } from "../../hooks/useDeleteStudyLog";
 
-export default function StudyRecord() {
+export default function StudyLogs() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [seletedDate, setSeletedDate] = useState("");
   const itemsPerpage = 10;
 
-  const { data, isLoading: isStudyLogsLoading } = useStudyLogsData(
-    currentPage,
-    itemsPerpage,
-  );
-
   const { mutate: deleteStudyLog, isPending: isDeleteStudyLogPending } =
-    useDeleteStudyLogs(currentPage, itemsPerpage);
+    useDeleteStudyLog();
+  const { data: studyLogData, isLoading: isStudyLogsLoading } =
+    useStudyLogQuery({
+      page: currentPage,
+      limit: itemsPerpage,
+      // date: seletedDate,
+    });
 
-  if (!data) return null;
-  const { studyLogs, pagination } = data;
+  if (!studyLogData?.data) return null;
+
+  const { studyLogs, pagination } = studyLogData.data;
 
   const pages =
     Array.from({ length: pagination.totalPages }, (_, i) => i + 1) || 1;
@@ -57,7 +60,7 @@ export default function StudyRecord() {
             </tr>
           </thead>
           <tbody>
-            {studyLogs.map((log, i) => {
+            {studyLogs.map((log) => {
               const { hours, minutes } = formatTime(log.studyTime);
               return (
                 <tr
@@ -97,6 +100,7 @@ export default function StudyRecord() {
       {/* pagination */}
       <div className="flex justify-center gap-3 py-9">
         <button
+          onClick={() => setCurrentPage(1)}
           disabled={!pagination?.hasPrev}
           className="disabled:bg-disabled-200 disabled:text-disabled-300 flex h-6 w-6 cursor-pointer items-center justify-center rounded-[5px] bg-[#f0f2f5] py-0.5"
         >

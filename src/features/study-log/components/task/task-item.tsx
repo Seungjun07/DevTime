@@ -1,7 +1,7 @@
-import tagIcon from "./../../../assets/tag.png";
-import editIcon from "./../../../assets/edit.png";
-import trashIcon from "./../../../assets/trash.png";
-import checkIcon from "./../../../assets/check.png";
+import tagIcon from "./../../../../assets/tag.png";
+import editIcon from "./../../../../assets/edit.png";
+import trashIcon from "./../../../../assets/trash.png";
+import checkIcon from "./../../../../assets/check.png";
 import { useEffect, useRef, useState } from "react";
 
 export type TaskItemMode = "CREATE" | "VIEW" | "EDIT";

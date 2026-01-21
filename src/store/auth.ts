@@ -10,15 +10,6 @@ import {
 import { combine } from "zustand/middleware";
 import { logout } from "../api/auth";
 
-export interface LoginResponse {
-  accessToken: string;
-  isDuplicateLogin: boolean;
-  isFirstLogin: boolean;
-  message: string;
-  refreshToken: string;
-  success: boolean;
-}
-
 interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
