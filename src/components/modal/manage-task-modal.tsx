@@ -4,12 +4,11 @@ import type { Task } from "../../types";
 
 import Dialog from "../common/Dialog/Dialog";
 import Button from "../common/Button";
-
-import useTasks from "../../hooks/use-tasks";
-import TaskEditor from "../../features/task/components/task-editor";
-import TaskHeader from "../../features/task/components/task-header";
-import TaskList from "../../features/task/components/task-list";
-import { useUpdateTask } from "../../features/task/hooks/useUpdateTask";
+import TaskEditor from "../../features/study-log/components/task/task-editor";
+import TaskHeader from "../../features/study-log/components/task/task-header";
+import TaskList from "../../features/study-log/components/task/task-list";
+import useTasks from "../../features/study-log/hooks/useTasks";
+import { useUpdateTask } from "../../features/study-log/hooks/useUpdateTask";
 
 interface ModalProps {
   open: boolean;

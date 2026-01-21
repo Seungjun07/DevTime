@@ -2,10 +2,10 @@ import { useState } from "react";
 import Dialog from "../common/Dialog/Dialog";
 import TextField from "../common/TextField/TextField";
 import Button from "../common/Button";
-import useTasks from "../../hooks/use-tasks";
 import { useTimer } from "../../hooks/use-timer";
-import TaskEditor from "../../features/task/components/task-editor";
-import TaskList from "../../features/task/components/task-list";
+import TaskEditor from "../../features/study-log/components/task/task-editor";
+import TaskList from "../../features/study-log/components/task/task-list";
+import useTasks from "../../features/study-log/hooks/useTasks";
 
 interface ModalProps {
   open: boolean;

@@ -3,13 +3,13 @@ import Dialog from "../common/Dialog/Dialog";
 import { useTasksData } from "../../hooks/queries/use-tasks-data";
 import { useTimer } from "../../hooks/use-timer";
 import { useDeleteTimer } from "../../hooks/mutations/timer/use-delete-timer";
-import useTasks from "../../hooks/use-tasks";
 import Button from "../common/Button";
 import { getAccessToken } from "../../utils/token";
 import { stopTimer } from "../../api/timer";
-import TaskEditor from "../../features/task/components/task-editor";
-import TaskHeader from "../../features/task/components/task-header";
-import TaskList from "../../features/task/components/task-list";
+import useTasks from "../../features/study-log/hooks/useTasks";
+import TaskEditor from "../../features/study-log/components/task/task-editor";
+import TaskHeader from "../../features/study-log/components/task/task-header";
+import TaskList from "../../features/study-log/components/task/task-list";
 
 interface ModalProps {
   open: boolean;

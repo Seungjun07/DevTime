@@ -1,5 +1,3 @@
-export const IMAGE_URL = import.meta.env.VITE_IMAGE_URL;
-
 export const TERMS =
   "제1조 (목적) 이 약관은 DevTime(이하 “서비스”)의 이용 조건 및 절차,\
           사용자와 서비스 제공자(회사) 간의 권리, 의무 및 책임사항을 규정함을\

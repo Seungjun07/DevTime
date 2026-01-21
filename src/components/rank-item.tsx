@@ -1,4 +1,4 @@
-import { IMAGE_URL } from "../constant";
+import { IMAGE_URL } from "../api/api";
 import type { RankingItem } from "../types";
 import defaultAvartar from "./../assets/Profile.png";
 
