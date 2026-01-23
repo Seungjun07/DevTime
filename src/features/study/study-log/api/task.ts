@@ -1,0 +1,35 @@
+import { API_BASE_URL } from "../../../../api/api";
+import { getAccessToken } from "../../../../lib/token";
+import type { TaskResponse, UpdateTaskRequest } from "..";
+
+/**
+ * 할 일 목록 업데이트
+ * @param studyLogId
+ * @param tasks
+ * @returns success, message
+ */
+export async function updateTaskApi({
+  studyLogId,
+  tasks,
+}: UpdateTaskRequest): Promise<TaskResponse> {
+  const accessToken = getAccessToken();
+
+  if (!accessToken) throw new Error("로그인 필요");
+
+  const response = await fetch(`${API_BASE_URL}/api/${studyLogId}/tasks`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      tasks,
+    }),
+  });
+
+  if (!response.ok) throw new Error("할 일 수정 실패");
+
+  const data = response.json();
+
+  return data;
+}
