@@ -6,7 +6,7 @@ import {
   getRefreshToken,
   setAccessToken,
   setRefreshToken,
-} from "../utils/token";
+} from "../lib/token";
 import { combine } from "zustand/middleware";
 import { logout } from "../api/auth";
 

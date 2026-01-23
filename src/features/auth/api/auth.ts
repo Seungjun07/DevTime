@@ -4,7 +4,7 @@ import {
   getRefreshToken,
   deleteToken,
   setAccessToken,
-} from "../../../utils/token";
+} from "../../../lib/token";
 import type { LoginResponse, LogoutResponse, RefreshResponse } from "../types";
 
 /**

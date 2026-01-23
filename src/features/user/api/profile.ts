@@ -1,5 +1,5 @@
 import { API_BASE_URL } from "../../../api/api";
-import { getAccessToken } from "../../../utils/token";
+import { getAccessToken } from "../../../lib/token";
 import type {
   FetchProfileResponse,
   Profile,

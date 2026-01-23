@@ -1,11 +1,11 @@
 import { useState } from "react";
 import ProfilePopOver from "./profile-pop-over";
-import { useProfileData } from "../hooks/queries/use-profile-data";
+import { useProfileQuery } from "../features/user/hooks/queries/useProfileQuery";
 
 export default function Profile() {
   const [isClicked, setIsClicked] = useState(false);
 
-  const { data: profile, isLoading } = useProfileData();
+  const { data: profile, isLoading } = useProfileQuery();
 
   if (isLoading) return <div>로딩 중입니다..</div>;
   return (

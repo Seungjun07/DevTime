@@ -1,4 +1,4 @@
-import { formatTime } from "../lib/time";
+import { formatTime } from "../utils/time";
 
 type StudyData = {
   day: string;

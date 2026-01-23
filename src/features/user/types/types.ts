@@ -9,11 +9,11 @@ export type Purpose =
   | { type: "기타"; detail: string };
 
 export interface Profile {
-  career: Career;
+  career: Career | "";
   purpose: Purpose;
-  goal?: string;
+  goal: string;
   techStacks: string[]; // 사용 기술 스택
-  profileImage?: string | null;
+  profileImage: string | null;
 }
 
 export interface ProfileForm {

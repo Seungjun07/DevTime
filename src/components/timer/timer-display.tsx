@@ -1,8 +1,8 @@
-import { formatTime } from "../../lib/time";
+import { formatTimeMainPage } from "../../utils/time";
 import TimerCard from "./timer-card";
 
 export default function TimerDisplay({ time }: { time: number }) {
-  const { hours, minutes, seconds } = formatTime(time);
+  const { hours, minutes, seconds } = formatTimeMainPage(time);
 
   return (
     <div className="text-primary-blue flex justify-between gap-12">

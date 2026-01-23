@@ -1,12 +1,12 @@
 import editIcon from "./../assets/edit.png";
 import { Link } from "react-router-dom";
 import defaultAvartar from "./../assets/user.png";
-import { useProfileData } from "../hooks/queries/use-profile-data";
 import { useEffect, useState } from "react";
 import { IMAGE_URL } from "../api/api";
+import { useProfileQuery } from "../features/user/hooks/queries/useProfileQuery";
 
 export default function MyPage() {
-  const { data: profile, isLoading, error } = useProfileData();
+  const { data: profile, isLoading, error } = useProfileQuery();
   const imageUrl = `${IMAGE_URL}/${profile?.profile?.profileImage}`;
   const [purpose, setPurpose] = useState<string>("");
 

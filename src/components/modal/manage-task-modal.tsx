@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
-import { useTasksData } from "../../hooks/queries/use-tasks-data";
-import type { Task } from "../../types";
 
 import Dialog from "../common/Dialog/Dialog";
 import Button from "../common/Button";
-import TaskEditor from "../../features/study-log/components/task/task-editor";
-import TaskHeader from "../../features/study-log/components/task/task-header";
-import TaskList from "../../features/study-log/components/task/task-list";
-import useTasks from "../../features/study-log/hooks/useTasks";
-import { useUpdateTask } from "../../features/study-log/hooks/useUpdateTask";
+import useTasks from "../../features/study/study-log/hooks/useTasks";
+import { useUpdateTask } from "../../features/study/study-log/hooks/useUpdateTask";
+import TaskEditor from "../../features/study/study-log/components/task/task-editor";
+import TaskHeader from "../../features/study/study-log/components/task/task-header";
+import TaskList from "../../features/study/study-log/components/task/task-list";
+import { useStudyLogTasksQuery } from "../../features/study/study-log/hooks/queries/useStudyLogTasksQuery";
+import type { Task } from "../../features/study/study-log";
+import { useTimerStore } from "../../store/timer";
 
 interface ModalProps {
   open: boolean;
@@ -16,18 +17,19 @@ interface ModalProps {
 }
 
 export default function ManageTaskModal({ open, onClose }: ModalProps) {
+  const { studyLogId } = useTimerStore();
   const { tasks, addTask, setTasks, removeTask, toggleTask, updateTask } =
     useTasks();
 
   const [isEditMode, setIsEditMode] = useState(false);
-  const studyLogId = JSON.parse(localStorage.getItem("studyLogId") || "");
-  const { data: tasksFromServer, isLoading } = useTasksData(studyLogId);
+
+  const { data: tasksFromServer = [] } = useStudyLogTasksQuery(studyLogId);
 
   useEffect(() => {
-    if (tasksFromServer) {
+    if (tasksFromServer?.length > 0) {
       setTasks(tasksFromServer);
     }
-  }, [tasksFromServer]);
+  }, [tasksFromServer, setTasks]);
 
   function isTasksChanged(prev: Task[], current: Task[]) {
     if (!prev || !current) return false;
@@ -52,7 +54,8 @@ export default function ManageTaskModal({ open, onClose }: ModalProps) {
   const { mutate: updateTasks } = useUpdateTask();
 
   function handleUpdateTask() {
-    const studyLogId = JSON.parse(localStorage.getItem("studyLogId") || "");
+    if (!studyLogId) return;
+
     updateTasks({ studyLogId, tasks });
 
     onClose();

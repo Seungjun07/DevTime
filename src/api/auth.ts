@@ -4,7 +4,7 @@ import {
   getAccessToken,
   getRefreshToken,
   setAccessToken,
-} from "../utils/token";
+} from "../lib/token";
 
 export interface LoginResponse {
   accessToken: string;

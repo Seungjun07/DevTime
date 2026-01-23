@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useUpdateProfile } from "../hooks/mutations/profile/use-update-profile";
 import { useDebounce } from "../hooks/use-debounce";
 import { useProfileQuery } from "../features/user/hooks/queries/useProfileQuery";
 import Button from "../components/common/Button";
@@ -20,10 +19,15 @@ import type {
 } from "../features/user/types/types";
 import ProfileImage from "../features/user/components/profile/ProfileImage";
 import { IMAGE_URL } from "../api/api";
+import { useModalStore } from "../store/modals";
+import { useUpdateProfile } from "../features/user/hooks/mutations/useUpdateProfile";
+import { useNavigate } from "react-router-dom";
 
 export default function ProfileEditPage() {
+  const navigate = useNavigate();
   const { data: profile, isLoading: isProfileLoading } = useProfileQuery();
-  // const { data: profile, isLoading: isProfileLoading } = useProfileData();
+
+  const { openConfirmModal, openAlertModal } = useModalStore();
 
   // tech-stack
   const { keyword, selected, setKeyword, addStack, deleteStack } =
@@ -35,43 +39,72 @@ export default function ProfileEditPage() {
   const { mutate: createTechStack } = useCreateTechStack({
     onSuccess: addStack,
   });
-  const [profileImageKey, setProfileImageKey] = useState<string | null>(null);
 
   const [career, setCareer] = useState<Career | "">("");
-
+  const [profileImageKey, setProfileImageKey] = useState<string | null>(null);
   const [profileForm, setProfileForm] = useState({
     nickname: "",
+    purposeSelect: "" as PurposeOption | "",
+    purposeDetail: "",
     goal: "",
-    techStacks: [] as string[], // 이름 배열
-    profileImage: "", // key가 아직 없으면 빈 문자열
+    profileImage: null as string | null,
   });
+
+  const [isNicknameChecked, setIsNicknameChecked] = useState({
+    available: false,
+    message: "",
+  });
+  const { refetch: refetchNickname } = useCheckNickname(profileForm.nickname);
 
   const [purposeSelect, setPurposeSelect] = useState<PurposeOption | "">("");
   const [purposeDetail, setPurposeDetail] = useState("");
 
-  const { mutate: updateProfile, isPending: isUpdateProfilePending } =
-    useUpdateProfile({
-      onSuccess: () => {
-        alert("저장 완료");
-      },
-    });
+  const { mutate: updateProfile } = useUpdateProfile({
+    onSuccess: () => {
+      openAlertModal({
+        title: "변경 사항이 저장되었습니다.",
+      });
+    },
+    onError: () => {
+      openAlertModal({
+        title: "변경 사항 저장에 실패하였습니다.",
+      });
+    },
+  });
 
   useEffect(() => {
     if (!profile) return;
 
-    setProfileForm((prev) => ({
-      ...prev,
+    const purpose = profile.profile.purpose;
+    setProfileForm({
       nickname: profile.nickname,
-      career: profile?.profile?.career ?? "",
-      // purpose: purposeSelect,
-      goal: profile?.profile?.goal ?? "",
-      techStacks: profile?.profile?.techStacks ?? [],
-      profileImage: profile?.profile?.profileImage ?? "",
-    }));
+      purposeSelect: typeof purpose === "string" ? purpose : purpose.type,
+      purposeDetail: typeof purpose === "object" ? purpose.detail : "",
+      goal: profile.profile.goal,
+      profileImage: profile.profile.profileImage ?? null,
+    });
+
+    setCareer(profile.profile.career);
+
+    if (typeof purpose === "string") {
+      setPurposeSelect(purpose);
+    } else {
+      setPurposeSelect("기타");
+      setPurposeDetail(purpose.detail);
+    }
   }, [profile]);
 
+  function handleConfirmSave() {
+    openConfirmModal({
+      title: "변경 사항을 저장하시겠습니까?",
+      confirmText: "저장하기",
+      onConfirm: handleSave,
+    });
+  }
+
   function handleSave() {
-    if (!purposeSelect) return;
+    console.log(profileForm.nickname);
+    if (!purposeSelect || !career) return;
 
     const purpose: Purpose =
       purposeSelect === "기타"
@@ -86,8 +119,8 @@ export default function ProfileEditPage() {
       career: career,
       purpose,
       goal: profileForm.goal,
-      techStacks: profileForm.techStacks,
-      profileImage: profileForm.profileImage,
+      techStacks: selected.map((stack) => stack.name),
+      profileImage: profileImageKey,
     });
   }
 
@@ -97,13 +130,6 @@ export default function ProfileEditPage() {
     if (!keyword.trim()) return;
     createTechStack(keyword);
   }
-
-  const [isNicknameChecked, setIsNicknameChecked] = useState({
-    available: false,
-    message: "",
-  });
-
-  const { refetch: refetchNickname } = useCheckNickname(profileForm.nickname);
 
   async function handleCheckNickname() {
     const { data } = await refetchNickname();
@@ -141,6 +167,7 @@ export default function ProfileEditPage() {
             <div className="flex gap-3">
               <input
                 id="nickname"
+                value={profileForm.nickname}
                 onChange={(e) =>
                   setProfileForm((prev) => ({
                     ...prev,
@@ -150,12 +177,9 @@ export default function ProfileEditPage() {
                 className="h-11 flex-1 rounded-sm bg-gray-50 px-4 py-3 text-[16px] leading-5 font-medium placeholder:text-gray-600"
                 placeholder={profileForm.nickname}
               />
-              <button
-                onClick={handleCheckNickname}
-                className="bg-disabled-200 text-disabled-400 h-11 px-4 py-3 text-sm leading-[18px] font-semibold"
-              >
+              <Button onClick={handleCheckNickname} variant={"secondary"}>
                 중복 확인
-              </button>
+              </Button>
             </div>
             {<p>{isNicknameChecked.message}</p>}
           </div>
@@ -216,9 +240,7 @@ export default function ProfileEditPage() {
         <div className="flex flex-1 flex-col gap-6">
           <CareerSelect
             value={career}
-            onChange={(value) =>
-              setProfileForm((prev) => ({ ...prev, career: value }))
-            }
+            onChange={setCareer}
             className="w-full"
           />
 
@@ -244,12 +266,12 @@ export default function ProfileEditPage() {
       </div>
 
       <div className="flex justify-end gap-4">
-        <Button variant={"tertiary"} size={"lg"}>
+        <Button variant={"tertiary"} size={"lg"} onClick={() => navigate(-1)}>
           취소
         </Button>
         <Button
-          onClick={handleSave}
-          disabled={!profileForm.goal}
+          onClick={handleConfirmSave}
+          disabled={!profileForm.goal || !career}
           variant={"primary"}
           size={"lg"}
         >

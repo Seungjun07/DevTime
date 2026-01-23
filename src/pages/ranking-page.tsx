@@ -1,15 +1,43 @@
-import { useState } from "react";
-import RankItem from "../components/rank-item";
-import { useRankingData } from "../hooks/queries/use-ranking-data";
+import { useEffect, useRef, useState } from "react";
+import RankItem from "../features/ranking/components/RankItem";
+import { useInfiniteRanking } from "../features/ranking/hooks/useRankingQuery";
 
 export default function RankingPage() {
   const [sortBy, setSortBy] = useState("total");
+  const observerRef = useRef(null);
 
-  const { data: rankings, isLoading } = useRankingData(sortBy);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useInfiniteRanking({
+      sortBy,
+    });
 
   function handleSortBy(standard: string) {
     setSortBy(standard);
   }
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    const curretTarget = observerRef.current;
+    if (curretTarget) {
+      observer.observe(curretTarget);
+    }
+
+    return () => {
+      if (curretTarget) {
+        observer.unobserve(curretTarget);
+      }
+    };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const rankings = data?.pages.flatMap((page) => page.data.rankings) ?? [];
 
   if (isLoading) return <div>로딩 중입니다..</div>;
 
@@ -30,9 +58,13 @@ export default function RankingPage() {
         </div>
       </div>
       <div className="scrollbar-hide flex h-[918px] w-300 flex-col gap-3 overflow-y-auto">
-        {rankings?.map((ranking) => (
+        {rankings.map((ranking) => (
           <RankItem key={ranking.userId} {...ranking} />
         ))}
+        <div ref={observerRef} className="h-10" />
+        {isFetchingNextPage && (
+          <div className="py-4 text-center text-gray-500">로딩 중...</div>
+        )}
       </div>
     </div>
   );

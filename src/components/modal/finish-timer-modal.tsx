@@ -1,15 +1,12 @@
 import { useEffect, useState } from "react";
 import Dialog from "../common/Dialog/Dialog";
-import { useTasksData } from "../../hooks/queries/use-tasks-data";
-import { useTimer } from "../../hooks/use-timer";
-import { useDeleteTimer } from "../../hooks/mutations/timer/use-delete-timer";
+import { useTimer } from "../../features/study/timer/hooks/useTimer";
 import Button from "../common/Button";
-import { getAccessToken } from "../../utils/token";
-import { stopTimer } from "../../api/timer";
-import useTasks from "../../features/study-log/hooks/useTasks";
-import TaskEditor from "../../features/study-log/components/task/task-editor";
-import TaskHeader from "../../features/study-log/components/task/task-header";
-import TaskList from "../../features/study-log/components/task/task-list";
+import useTasks from "../../features/study/study-log/hooks/useTasks";
+import TaskEditor from "../../features/study/study-log/components/task/task-editor";
+import TaskHeader from "../../features/study/study-log/components/task/task-header";
+import TaskList from "../../features/study/study-log/components/task/task-list";
+import { useStudyLogTasksQuery } from "../../features/study/study-log/hooks/queries/useStudyLogTasksQuery";
 
 interface ModalProps {
   open: boolean;
@@ -17,39 +14,32 @@ interface ModalProps {
 }
 
 export default function FinishTimerModal({ onClose, open }: ModalProps) {
-  const studyLogId = JSON.parse(localStorage.getItem("studyLogId") || "");
-  const timerId = JSON.parse(localStorage.getItem("timerId") || "");
-
   const [studyReview, setStudyReview] = useState("");
 
   const isDisabled = studyReview.length < 15;
 
-  const { splitTimes, resetTimer } = useTimer();
+  const { timerId, studyLogId, finishTimer } = useTimer();
 
   const { tasks, setTasks, addTask, updateTask, removeTask, toggleTask } =
     useTasks();
+
   const [isEditMode, setIsEditMode] = useState(false);
 
-  const accessToken = getAccessToken();
-
-  const { data: tasksFromServer, isLoading } = useTasksData(studyLogId);
-  const { mutate: deleteTimer } = useDeleteTimer();
+  const { data: tasksFromServer } = useStudyLogTasksQuery(studyLogId);
 
   useEffect(() => {
     if (tasksFromServer) {
       setTasks(tasksFromServer);
     }
-  }, [tasksFromServer]);
+  }, [tasksFromServer, setTasks]);
 
-  async function finishTimer() {
+  async function handleFinish() {
+    if (!timerId || !studyLogId) return;
+
     try {
-      const data = await stopTimer(timerId, splitTimes, studyReview, tasks);
+      await finishTimer(studyReview, tasks);
 
-      deleteTimer(timerId);
-
-      resetTimer();
-
-      console.log("타이머 종료", data);
+      onClose();
     } catch (error) {
       console.log(error);
     }
@@ -57,11 +47,6 @@ export default function FinishTimerModal({ onClose, open }: ModalProps) {
 
   function editTask() {
     setIsEditMode(true);
-  }
-
-  function handleFinish() {
-    finishTimer();
-    onClose();
   }
 
   return (

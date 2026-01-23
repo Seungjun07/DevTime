@@ -1,15 +1,13 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/auth";
-import { useDeleteTimer } from "../hooks/mutations/timer/use-delete-timer";
-import { useProfileData } from "../hooks/queries/use-profile-data";
-
-import StudyTimer from "../components/timer/timer-display";
-
-import { useTimer } from "../hooks/use-timer";
+import { useTimer } from "../features/study/timer/hooks/useTimer";
 import { useModalStore } from "../store/modals";
+
 import TimerDisplay from "../components/timer/timer-display";
 import TimerControls from "../components/timer/timer-controls";
+
+import { useProfileQuery } from "../features/user/hooks/queries/useProfileQuery";
 
 export default function IndexPage() {
   const navigate = useNavigate();
@@ -20,17 +18,13 @@ export default function IndexPage() {
 
   const { openConfirmModal, openCustomModal } = useModalStore();
 
-  const storedTimer = localStorage.getItem("timerId");
-  const timerId = storedTimer ? JSON.parse(storedTimer) : null;
-
   const {
     seconds,
     isRunning,
-    splitTimes,
-    fetchTimer,
-    startTimer,
+    timerId,
     resumeTimer,
     pauseTimer,
+    deleteTimer,
     resetTimer,
   } = useTimer();
 
@@ -69,23 +63,20 @@ export default function IndexPage() {
     openCustomModal({ type: "MANAGE_TASK" });
   }
 
-  const { mutate: deleteTimer, isPending: isDeleteTimerPending } =
-    useDeleteTimer();
-
-  function handleResetClick() {
+  async function handleResetClick() {
+    await deleteTimer();
     resetTimer();
-    deleteTimer(timerId);
   }
 
   function handleFinishClick() {
     openCustomModal({ type: "FINISH_TIMER" });
   }
 
-  const {
-    data: profile,
-    isLoading: isProfileLoading,
-    error: profileError,
-  } = useProfileData();
+  async function handlePauseClick() {
+    await pauseTimer();
+  }
+
+  const { data: profile } = useProfileQuery();
 
   return (
     <div>
@@ -107,10 +98,11 @@ export default function IndexPage() {
       <div className="m-auto flex w-258 flex-col gap-20">
         <TimerDisplay time={seconds} />
         <TimerControls
+          timerId={timerId ?? ""}
           seconds={seconds}
           isRunning={isRunning}
           onStart={handleStartTimer}
-          onPause={pauseTimer}
+          onPause={handlePauseClick}
           onFinish={handleFinishClick}
           onReset={handleResetClick}
           onOpenTask={handleTaskList}

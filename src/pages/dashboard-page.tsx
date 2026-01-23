@@ -1,40 +1,15 @@
-import StudyHeatmap from "../components/study-heatmap";
-import { getAccessToken } from "../utils/token";
+import StudyHeatmap from "../features/study/stats/components/StudyHeatmap";
 import WeekdayStudyAverage from "../components/weekday-study-average";
-import { useQuery } from "@tanstack/react-query";
-import { API_BASE_URL } from "../api/api";
-import StudyRecord from "../features/study-log/components/studyLog/StudyLogs";
+import StudyLogs from "../features/study/study-log/components/studyLog/StudyLogs";
+import { useStatsQuery } from "../features/study/stats/hooks/useStatsQuery";
 
 type StudyData = {
   day: string;
   value: number;
 };
-async function getMyStudyInfo() {
-  try {
-    const accessToken = getAccessToken();
-    if (!accessToken) throw new Error("로그인 필요");
 
-    const response = await fetch(`${API_BASE_URL}/api/stats`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-    if (!response.ok) throw new Error("정보 불러오기 실패");
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.log(error);
-  }
-}
 export default function DashboardPage() {
-  const {
-    data: myStudyInfo,
-    isLoading,
-    error,
-  } = useQuery({
-    queryFn: getMyStudyInfo,
-    queryKey: ["myStudyInfo"],
-  });
+  const { data: myStats, isLoading } = useStatsQuery();
 
   function formatTime(sec: number) {
     const time = Math.floor(sec / 1000);
@@ -53,17 +28,16 @@ export default function DashboardPage() {
   }
 
   const { hours: totalHours, minutes: totalMinutes } = formatTime(
-    myStudyInfo?.totalStudyTime,
+    myStats?.totalStudyTime ?? 0,
   );
   const { hours: averageHours, minutes: averageMinutes } = formatTime(
-    myStudyInfo?.averageDailyStudyTime,
+    myStats?.averageDailyStudyTime ?? 0,
   );
 
-  const weekdayStudyTime = Object.entries(
-    myStudyInfo?.weekdayStudyTime || {},
-  ).map(([day, value]) => ({ day, value }));
+  const weekdayStudyTime = Object.entries(myStats?.weekdayStudyTime || {}).map(
+    ([day, value]) => ({ day, value }),
+  );
 
-  if (error) return <div>오류가 발생했습니다...</div>;
   if (isLoading) return <div>로딩 중...</div>;
 
   return (
@@ -90,7 +64,7 @@ export default function DashboardPage() {
               누적 공부 일수
             </p>
             <p className="text-secondary-indigo text-end text-4xl leading-[46px] font-bold">
-              {myStudyInfo?.consecutiveDays}
+              {myStats?.consecutiveDays}
               <span className="text-[16px] leading-5 font-medium">
                 &nbsp;일째
               </span>
@@ -116,7 +90,7 @@ export default function DashboardPage() {
               목표 달성률
             </p>
             <p className="text-secondary-indigo text-end text-4xl leading-[46px] font-bold">
-              {myStudyInfo?.taskCompletionRate}
+              {myStats?.taskCompletionRate}
               <span className="text-[16px] leading-5 font-medium">&nbsp;%</span>
             </p>
           </div>
@@ -131,7 +105,7 @@ export default function DashboardPage() {
       <StudyHeatmap />
 
       {/* 학습 기록 */}
-      <StudyRecord />
+      <StudyLogs />
     </div>
   );
 }

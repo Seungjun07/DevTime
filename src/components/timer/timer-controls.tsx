@@ -6,8 +6,10 @@ import finishIcon from "./../../assets/Finish.png";
 import enabledFinishIcon from "./../../assets/Finish-enabled.png";
 import resetIcon from "./../../assets/Reset.png";
 import todoIcon from "./../../assets/TODO.png";
+import { useTimerStore } from "../../store/timer";
 
 interface TimerControlsProps {
+  timerId: string;
   seconds: number;
   isRunning: boolean;
   onStart: () => void;
@@ -18,6 +20,7 @@ interface TimerControlsProps {
 }
 
 export default function TimerControls({
+  timerId,
   seconds,
   isRunning,
   onStart,
@@ -26,8 +29,6 @@ export default function TimerControls({
   onReset,
   onOpenTask,
 }: TimerControlsProps) {
-  const timerId = localStorage.getItem("timerId");
-
   return (
     <div className="relative flex items-center gap-[134px]">
       <div className="m-auto flex items-end justify-end gap-20">
