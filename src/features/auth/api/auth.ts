@@ -1,4 +1,3 @@
-import type { RequestInit } from "next/dist/server/web/spec-extension/request";
 import { API_BASE_URL } from "../../../api/api";
 import {
   getAccessToken,
@@ -111,7 +110,15 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
 
     if (!accessToken) throw new Error("NOT_LOGGED_IN");
 
-    response = await fetch(url, options);
+    const newOptions: RequestInit = {
+      ...options,
+      headers: {
+        ...(options.headers || {}),
+        Authorization: accessToken ? `Bearer ${accessToken}` : "",
+      },
+    };
+
+    response = await fetch(url, newOptions);
 
     if (!response.ok) throw new Error("API_FAILED");
   }
