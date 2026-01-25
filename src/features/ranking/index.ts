@@ -1,6 +1,6 @@
 import type { Pagination } from "../../types";
 import type { TechStack } from "../user/types/techStack";
-import type { Profile } from "../user/types/types";
+import type { Profile } from "../user/types/profile";
 
 export interface RankingItem {
   rank: number;

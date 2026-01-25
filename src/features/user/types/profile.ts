@@ -42,4 +42,3 @@ export interface UpdateProfileRequest extends Profile {
 }
 
 export type CareerFormValue = Career | "";
-// export type Pur

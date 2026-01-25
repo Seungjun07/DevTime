@@ -4,7 +4,7 @@ import type {
   CheckNicknameResponse,
   SignUpFormData,
   SignupResponse,
-} from "../types";
+} from "../types/signup";
 
 /**
  * 이메일 중복 검사

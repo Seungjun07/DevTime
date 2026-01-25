@@ -2,6 +2,7 @@ import StudyHeatmap from "../features/study/stats/components/StudyHeatmap";
 import WeekdayStudyAverage from "../components/weekday-study-average";
 import StudyLogs from "../features/study/study-log/components/studyLog/StudyLogs";
 import { useStatsQuery } from "../features/study/stats/hooks/useStatsQuery";
+import { formatTime } from "@/utils/time";
 
 type StudyData = {
   day: string;
@@ -10,22 +11,6 @@ type StudyData = {
 
 export default function DashboardPage() {
   const { data: myStats, isLoading } = useStatsQuery();
-
-  function formatTime(sec: number) {
-    const time = Math.floor(sec / 1000);
-
-    const hours = Math.floor(time / 3600)
-      .toString()
-      .padStart(2, "0");
-    const minutes = Math.floor((time % 3600) / 60)
-      .toString()
-      .padStart(2, "0");
-    const seconds = Math.floor(time % 60)
-      .toString()
-      .padStart(2, "0");
-
-    return { hours, minutes, seconds };
-  }
 
   const { hours: totalHours, minutes: totalMinutes } = formatTime(
     myStats?.totalStudyTime ?? 0,

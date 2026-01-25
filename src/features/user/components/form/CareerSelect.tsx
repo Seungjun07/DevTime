@@ -1,7 +1,7 @@
 import Select from "../../../../components/common/Select/Select";
 import TextField from "../../../../components/common/TextField/TextField";
 import { CAREER_OPTIONS } from "../../constants";
-import type { Career } from "../../types/types";
+import type { Career } from "../../types/profile";
 
 interface Props {
   value: Career | "";

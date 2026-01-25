@@ -4,34 +4,32 @@
  * @param end : 종료 날짜
  */
 
-import type { SplitTimes } from "../features/study/timer";
+import type { SplitTimes } from "@/features/study/timer";
 
-export function splitTimeByDate(start: Date, end: Date): SplitTimes[] {
-  const splitTimes: SplitTimes[] = [];
+export function splitTimeByDate(
+  startTime: string,
+  endTime: string,
+): SplitTimes[] {
+  const start = new Date(startTime);
+  const end = new Date(endTime);
 
-  // 현재 계산 중인 시간 시작점
-  let current = new Date(start);
+  if (end <= start) return [];
+
+  const splitTime: SplitTimes[] = [];
+  let current = start;
 
   while (current < end) {
-    // 현재 날짜의 마지막 23:59:59.999
-    const endOfDay = new Date(current);
-    endOfDay.setHours(23, 59, 59, 999);
+    const nextDayStart = new Date(current);
+    nextDayStart.setHours(24, 0, 0, 0); //자정
+    const segmentEnd = nextDayStart < end ? nextDayStart : end;
 
-    // 현재 날짜 끝과 종료 시점 중 작은 값
-    const chunkEnd = end < endOfDay ? end : endOfDay;
-    const diffMs = chunkEnd.getTime() - current.getTime();
+    splitTime.push({
+      date: current.toISOString(),
+      timeSpent: segmentEnd.getTime() - current.getTime(),
+    });
 
-    // current 기준 날짜에 해당하는 시간 누적
-    if (diffMs > 0) {
-      splitTimes.push({
-        date: current.toISOString(), // YYYY-MM-DD
-        timeSpent: diffMs,
-      });
-    }
-
-    // 다음 날짜로 이동
-    current = new Date(chunkEnd.getTime() + 1);
+    current = segmentEnd;
   }
 
-  return splitTimes;
+  return splitTime;
 }

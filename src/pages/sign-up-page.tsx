@@ -3,12 +3,12 @@ import { TERMS } from "../constant";
 import { useEffect, useState } from "react";
 import Button from "../components/common/Button";
 import TextField from "../components/common/TextField/TextField";
-import { useSignupMutation } from "../features/signup/hooks/mutation/useSignUpMutation";
+import { useSignupMutation } from "../features/auth/hooks/useSignUpMutation";
 import {
   useCheckEmail,
   useCheckNickname,
-} from "../features/signup/hooks/queryies/useSignUpQueries";
-import { useSignUpForm } from "../features/signup/hooks/useSignUpForm";
+} from "../features/auth/hooks/useSignUpQueries";
+import { useSignUpForm } from "../features/auth/hooks/useSignUpForm";
 
 export default function SignUpPage() {
   const { values, errors, isValid, handleChange, handleBlur } = useSignUpForm();

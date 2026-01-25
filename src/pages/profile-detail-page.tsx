@@ -14,7 +14,7 @@ import type {
   Career,
   Purpose,
   PurposeOption,
-} from "../features/user/types/types";
+} from "../features/user/types/profile";
 import ProfileImage from "../features/user/components/profile/ProfileImage";
 
 export default function ProfileDetailPage() {

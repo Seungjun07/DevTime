@@ -1,4 +1,4 @@
-import { formatTimeMainPage } from "../../utils/time";
+import { formatTimeMainPage } from "@/utils/time";
 import TimerCard from "./timer-card";
 
 export default function TimerDisplay({ time }: { time: number }) {

@@ -4,7 +4,6 @@ import ConfirmModal from "../confirm-modal";
 import FinishTimerModal from "../finish-timer-modal";
 import ManageTaskModal from "../manage-task-modal";
 import StartTimderModal from "../start-timer-modal";
-import BaseModal from "./base-modal";
 
 export default function ModalRenderer() {
   const { type, props, closeModal } = useModalStore();

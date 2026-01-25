@@ -1,22 +1,22 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { updateTimer } from "../api/timer";
+import { useTimerStore } from "@/store/timer";
 import type { SplitTimes } from "..";
 
-interface Params {
-  timerId: string;
-  splitTimes: SplitTimes[];
-}
-
 export function useUpdateTimer() {
-  const queryClient = useQueryClient();
+  const { timerId, setStartTime, setLastUpdateTime, setSplitTimesOnly } =
+    useTimerStore();
 
   return useMutation({
-    mutationFn: ({ timerId, splitTimes }: Params) =>
-      updateTimer(timerId, splitTimes),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["timer"],
-      });
+    mutationFn: (splitTimes: SplitTimes[]) => {
+      if (!timerId) throw new Error("timerId가 없습니다.");
+
+      return updateTimer(timerId, splitTimes);
+    },
+    onSuccess: (data) => {
+      setStartTime(data.startTime);
+      setLastUpdateTime(data.lastUpdateTime);
+      setSplitTimesOnly(data.splitTimes);
     },
     retry: 0,
   });

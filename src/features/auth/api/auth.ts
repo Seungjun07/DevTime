@@ -1,3 +1,4 @@
+import type { RequestInit } from "next/dist/server/web/spec-extension/request";
 import { API_BASE_URL } from "../../../api/api";
 import {
   getAccessToken,
@@ -5,7 +6,11 @@ import {
   deleteToken,
   setAccessToken,
 } from "../../../lib/token";
-import type { LoginResponse, LogoutResponse, RefreshResponse } from "../types";
+import type {
+  LoginResponse,
+  LogoutResponse,
+  RefreshResponse,
+} from "../types/auth";
 
 /**
  * 로그인
@@ -51,7 +56,7 @@ export async function logout(): Promise<LogoutResponse> {
   });
   if (!response.ok) throw new Error("로그아웃 실패");
 
-  const data = response.json();
+  const data = await response.json();
 
   return data;
 }
@@ -63,6 +68,11 @@ export async function logout(): Promise<LogoutResponse> {
 export async function refresh(): Promise<RefreshResponse> {
   const refreshToken = getRefreshToken();
 
+  if (!refreshToken) {
+    deleteToken();
+    throw new Error("NOT_LOGGED_IN");
+  }
+
   const response = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -70,54 +80,38 @@ export async function refresh(): Promise<RefreshResponse> {
       refreshToken,
     }),
   });
-  if (!response.ok) throw new Error("토큰 재발행 실패");
 
-  const data = response.json();
+  if (!response.ok) {
+    deleteToken();
+    alert("세션이 만료되었습니다. 다시 로그인해주세요.");
+    window.location.href = "/sign-in";
+  }
+
+  const data = await response.json();
+
+  setAccessToken(data.accessToken);
 
   return data;
 }
 
-export async function fetchWithAuth(url: string, method: string) {
-  const accessToken = getAccessToken();
-  const headers = {
+export async function fetchWithAuth(url: string, options: RequestInit = {}) {
+  let accessToken = getAccessToken();
+  options.headers = {
+    ...(options.headers || {}),
     Authorization: accessToken ? `Bearer ${accessToken}` : "",
     "Content-Type": "application/json",
   };
 
-  let response = await fetch(url, { method: method, headers });
+  let response = await fetch(url, options);
 
   // AccessToken 만료 시 (401)
   if (response.status === 401) {
-    const refreshToken = getRefreshToken();
+    const refreshData = await refresh();
+    accessToken = refreshData.accessToken;
 
-    if (!refreshToken) {
-      deleteToken();
-      throw new Error("NOT_LOGGED_IN");
-    }
+    if (!accessToken) throw new Error("NOT_LOGGED_IN");
 
-    const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        refreshToken,
-      }),
-    });
-
-    if (!refreshResponse.ok) {
-      deleteToken();
-      alert("세션이 만료되었습니다. 다시 로그인해주세요.");
-      window.location.href = "/sign-in";
-      return;
-    }
-
-    const data = await refreshResponse.json();
-    setAccessToken(data.accessToken);
-
-    headers.Authorization = `Bearer ${data.accessToken}`;
-
-    response = await fetch(url, { method: method, headers });
+    response = await fetch(url, options);
 
     if (!response.ok) throw new Error("API_FAILED");
   }

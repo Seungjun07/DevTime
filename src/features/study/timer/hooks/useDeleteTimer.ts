@@ -1,18 +1,18 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { deleteTimer } from "../api/timer";
-import { useTimerStore } from "../../../../store/timer";
+import { useTimerStore } from "@/store/timer";
 
 export function useDeleteTimer() {
-  const queryClient = useQueryClient();
-  const resetAll = useTimerStore((state) => state.resetAll);
+  const timerId = useTimerStore((state) => state.timerId);
+  const reset = useTimerStore((state) => state.reset);
 
   return useMutation({
-    mutationFn: (timerId: string) => deleteTimer(timerId),
+    mutationFn: () => {
+      if (!timerId) throw new Error("타이머가 없습니다.");
+      return deleteTimer(timerId);
+    },
     onSuccess: () => {
-      resetAll();
-      queryClient.invalidateQueries({
-        queryKey: ["timer"],
-      });
+      reset();
     },
     retry: 0,
   });

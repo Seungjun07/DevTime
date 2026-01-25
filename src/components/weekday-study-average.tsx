@@ -12,7 +12,7 @@ type WeekdayStudyAverageProps = {
 export default function WeekdayStudyAverage({
   weekdayStudyTime,
 }: WeekdayStudyAverageProps) {
-  const dailyLabel = ["S", "M", "T", "W", "T", "F", "S"];
+  const DAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 
   const dayToLabel: { [day: string]: string } = {
     Sunday: "S",
@@ -24,7 +24,7 @@ export default function WeekdayStudyAverage({
     Saturday: "S",
   };
 
-  const studyData = dailyLabel.map((label, index) => {
+  const studyData = DAY_LABELS.map((label, index) => {
     let dayKey: string;
     if (label === "S" && index === 0) dayKey = "Sunday";
     else if (label === "T" && index === 2) dayKey = "Tuesday";
@@ -96,7 +96,7 @@ export default function WeekdayStudyAverage({
                   ></div>
                 </div>
                 <div className="text-secondary-indigo flex h-5 w-5 items-center justify-center rounded-full bg-white/50 text-xs leading-4 font-bold">
-                  {dailyLabel[index]}
+                  {DAY_LABELS[index]}
                 </div>
               </div>
             );

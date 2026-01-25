@@ -1,12 +1,12 @@
-import startIcon from "./../../assets/Start.png";
-import enabledStartIcon from "./../../assets/Start-enabled.png";
-import pauseIcon from "./../../assets/Pause.png";
-import enabledPauseIcon from "./../../assets/Pause-enabled.png";
-import finishIcon from "./../../assets/Finish.png";
-import enabledFinishIcon from "./../../assets/Finish-enabled.png";
-import resetIcon from "./../../assets/Reset.png";
-import todoIcon from "./../../assets/TODO.png";
-import { useTimerStore } from "../../store/timer";
+import startIcon from "@/assets/Start.png";
+import enabledStartIcon from "@/assets/Start-enabled.png";
+import pauseIcon from "@/assets/Pause.png";
+import enabledPauseIcon from "@/assets/Pause-enabled.png";
+import finishIcon from "@/assets/Finish.png";
+import enabledFinishIcon from "@/assets/Finish-enabled.png";
+import resetIcon from "@/assets/Reset.png";
+import todoIcon from "@/assets/TODO.png";
+import { useTimerStore } from "@/store/timer";
 
 interface TimerControlsProps {
   timerId: string;

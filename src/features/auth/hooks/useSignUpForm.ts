@@ -5,7 +5,7 @@ import {
   validateNickname,
   validatePassword,
 } from "../../../utils/validate";
-import type { SignUpFormData } from "../types";
+import type { SignUpFormData } from "../types/signup";
 
 export function useSignUpForm() {
   const [values, setValues] = useState({

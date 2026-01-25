@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useDebounce } from "../hooks/use-debounce";
 import { useProfileQuery } from "../features/user/hooks/queries/useProfileQuery";
 import Button from "../components/common/Button";
-import { useCheckNickname } from "../features/signup/hooks/queryies/useSignUpQueries";
+import { useCheckNickname } from "../features/auth/hooks/useSignUpQueries";
 
 import TechStackInput from "../features/user/components/tech-stack/TechStackInput";
 import TechStackList from "../features/user/components/tech-stack/TechStackList";
@@ -16,7 +16,7 @@ import type {
   Career,
   Purpose,
   PurposeOption,
-} from "../features/user/types/types";
+} from "../features/user/types/profile";
 import ProfileImage from "../features/user/components/profile/ProfileImage";
 import { IMAGE_URL } from "../api/api";
 import { useModalStore } from "../store/modals";
@@ -72,19 +72,19 @@ export default function ProfileEditPage() {
     },
   });
 
+  const purpose = profile?.profile?.purpose ?? "";
   useEffect(() => {
     if (!profile) return;
 
-    const purpose = profile.profile.purpose;
     setProfileForm({
       nickname: profile.nickname,
       purposeSelect: typeof purpose === "string" ? purpose : purpose.type,
       purposeDetail: typeof purpose === "object" ? purpose.detail : "",
-      goal: profile.profile.goal,
-      profileImage: profile.profile.profileImage ?? null,
+      goal: profile.profile?.goal,
+      profileImage: profile.profile?.profileImage ?? null,
     });
 
-    setCareer(profile.profile.career);
+    setCareer(profile.profile?.career);
 
     if (typeof purpose === "string") {
       setPurposeSelect(purpose);
@@ -92,7 +92,7 @@ export default function ProfileEditPage() {
       setPurposeSelect("기타");
       setPurposeDetail(purpose.detail);
     }
-  }, [profile]);
+  }, []);
 
   function handleConfirmSave() {
     openConfirmModal({

@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import Dialog from "../common/Dialog/Dialog";
-import { useTimer } from "../../features/study/timer/hooks/useTimer";
 import Button from "../common/Button";
 import useTasks from "../../features/study/study-log/hooks/useTasks";
 import TaskEditor from "../../features/study/study-log/components/task/task-editor";
 import TaskHeader from "../../features/study/study-log/components/task/task-header";
 import TaskList from "../../features/study/study-log/components/task/task-list";
 import { useStudyLogTasksQuery } from "../../features/study/study-log/hooks/queries/useStudyLogTasksQuery";
+import { useTimerStore } from "@/store/timer";
+import { useFinishTimer } from "@/features/study/timer/hooks/useFinishTimer";
+import { splitTimeByDate } from "@/utils/split-time-by-date";
 
 interface ModalProps {
   open: boolean;
@@ -18,7 +20,8 @@ export default function FinishTimerModal({ onClose, open }: ModalProps) {
 
   const isDisabled = studyReview.length < 15;
 
-  const { timerId, studyLogId, finishTimer } = useTimer();
+  const { startTime, studyLogId, timerId } = useTimerStore();
+  const { mutate: stopTimer } = useFinishTimer();
 
   const { tasks, setTasks, addTask, updateTask, removeTask, toggleTask } =
     useTasks();
@@ -33,16 +36,18 @@ export default function FinishTimerModal({ onClose, open }: ModalProps) {
     }
   }, [tasksFromServer, setTasks]);
 
-  async function handleFinish() {
+  function handleFinish() {
     if (!timerId || !studyLogId) return;
 
-    try {
-      await finishTimer(studyReview, tasks);
+    if (!startTime) return;
 
-      onClose();
-    } catch (error) {
-      console.log(error);
-    }
+    const endTime = new Date().toISOString();
+
+    const splitTimes = splitTimeByDate(startTime, endTime);
+
+    stopTimer({ review: studyReview, splitTimes, tasks });
+
+    onClose();
   }
 
   function editTask() {

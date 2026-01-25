@@ -2,29 +2,35 @@ import { getAccessToken } from "../../../../lib/token";
 import { API_BASE_URL } from "../../../../api/api";
 import type { Task } from "../../study-log";
 import type { FinishTimerResponse, SplitTimes, Timer } from "..";
+import { fetchWithAuth } from "@/features/auth/api/auth";
 
 /**
  * 타이머 정보 불러오기
  * @returns timerId, studyLogId, splitTimes[{date, timeSpent}], startTime, lastUpdateTime
  */
 export async function fetchTimer(): Promise<Timer> {
-  const accessToken = getAccessToken();
-
-  if (!accessToken) throw new Error("로그인 필요");
-
-  const response = await fetch(`${API_BASE_URL}/api/timers`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
+  return fetchWithAuth(`${API_BASE_URL}/api/timers`, {
+    method: "GET",
   });
-
-  if (!response.ok) throw new Error("타이머 불러오기 실패");
-
-  const data = await response.json();
-
-  return data;
 }
+// export async function fetchTimer(): Promise<Timer> {
+//   const accessToken = getAccessToken();
+
+//   if (!accessToken) throw new Error("로그인 필요");
+
+//   const response = await fetch(`${API_BASE_URL}/api/timers`, {
+//     headers: {
+//       Authorization: `Bearer ${accessToken}`,
+//       "Content-Type": "application/json",
+//     },
+//   });
+
+//   if (!response.ok) throw new Error("타이머 불러오기 실패");
+
+//   const data = await response.json();
+
+//   return data;
+// }
 
 /**
  * 타이머 생성하기

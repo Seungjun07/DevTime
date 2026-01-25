@@ -5,7 +5,7 @@ import type {
   Profile,
   SuccessProfileResponse,
   UpdateProfileRequest,
-} from "../types/types";
+} from "../types/profile";
 
 /**
  * 프로필 정보 조회

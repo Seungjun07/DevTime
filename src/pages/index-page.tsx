@@ -1,13 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "../store/auth";
-import { useTimer } from "../features/study/timer/hooks/useTimer";
 import { useModalStore } from "../store/modals";
 
-import TimerDisplay from "../components/timer/timer-display";
-import TimerControls from "../components/timer/timer-controls";
-
 import { useProfileQuery } from "../features/user/hooks/queries/useProfileQuery";
+import TimerControls from "@/features/study/timer/components/timer-controls";
+import TimerDisplay from "@/features/study/timer/components/timer-display";
+import { useAuthStore } from "@/store/auth";
+import { useTimerStore } from "@/store/timer";
+import { useUpdateTimer } from "@/features/study/timer/hooks/useUpdateTimer";
+import { splitTimeByDate } from "@/utils/split-time-by-date";
+import { useDeleteTimer } from "@/features/study/timer/hooks/useDeleteTimer";
+import { useTimerQuery } from "@/features/study/timer/hooks/useTimerQuery";
 
 export default function IndexPage() {
   const navigate = useNavigate();
@@ -19,20 +22,60 @@ export default function IndexPage() {
   const { openConfirmModal, openCustomModal } = useModalStore();
 
   const {
+    timerId,
     seconds,
     isRunning,
-    timerId,
-    resumeTimer,
-    pauseTimer,
-    deleteTimer,
-    resetTimer,
-  } = useTimer();
+    startTime,
+    setTimerInfo,
+    start,
+    pause,
+    resume,
+    setSplitTimes,
+    setSplitTimesOnly,
+  } = useTimerStore();
 
+  const { data: timerData } = useTimerQuery();
+  const { mutate: updateTimer } = useUpdateTimer();
+  const { mutate: deleteTimer } = useDeleteTimer();
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   useEffect(() => {
     if (!accessToken) {
       logout();
     }
   }, []);
+
+  useEffect(() => {
+    if (!timerData) return;
+
+    // localStorage에 timerId 존재(새로고침한 경우)
+    if (timerId === timerData.timerId && seconds > 0) {
+      setSplitTimesOnly(timerData.splitTimes);
+    } else {
+      // 새로운 타이머 or localStorage 비었음
+      if (timerData.splitTimes && timerData.splitTimes.length > 0) {
+        setSplitTimes(timerData.splitTimes);
+      }
+    }
+
+    setTimerInfo(timerData);
+  }, [timerData]);
+
+  useEffect(() => {
+    if (!startTime || !isRunning) return;
+
+    const poll = () => {
+      const now = new Date().toISOString();
+      const newSplitTimes = splitTimeByDate(startTime, now);
+
+      updateTimer(newSplitTimes);
+    };
+
+    pollingRef.current = setInterval(poll, 10 * 60 * 1000);
+
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, [isRunning, startTime]);
 
   // 타이머 컨트롤 함수
   function handleStartTimer() {
@@ -51,29 +94,40 @@ export default function IndexPage() {
       return;
     }
 
-    if (timerId) {
-      resumeTimer();
+    if (timerId && !isRunning) {
+      resume();
       return;
     }
 
-    openCustomModal({ type: "START_TIMER" });
+    if (!timerId) {
+      openCustomModal({ type: "START_TIMER" });
+      return;
+    }
   }
 
   function handleTaskList() {
     openCustomModal({ type: "MANAGE_TASK" });
   }
 
-  async function handleResetClick() {
-    await deleteTimer();
-    resetTimer();
+  function handleResetClick() {
+    deleteTimer();
+    if (pollingRef.current) clearInterval(pollingRef.current);
   }
 
   function handleFinishClick() {
     openCustomModal({ type: "FINISH_TIMER" });
   }
 
-  async function handlePauseClick() {
-    await pauseTimer();
+  function handlePauseClick() {
+    if (!isRunning || !startTime) return;
+
+    const endTime = new Date().toISOString();
+    const newSplitTimes = splitTimeByDate(startTime, endTime);
+
+    updateTimer(newSplitTimes);
+    pause();
+
+    if (pollingRef.current) clearInterval(pollingRef.current);
   }
 
   const { data: profile } = useProfileQuery();

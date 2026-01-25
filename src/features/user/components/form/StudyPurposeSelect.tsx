@@ -1,7 +1,7 @@
 import Select from "../../../../components/common/Select/Select";
 import TextField from "../../../../components/common/TextField/TextField";
 import { PURPOSE_OPTIONS } from "../../constants";
-import type { PurposeOption } from "../../types/types";
+import type { PurposeOption } from "../../types/profile";
 
 interface Props {
   selectValue: PurposeOption | "";

@@ -2,10 +2,10 @@ import { useState } from "react";
 import Dialog from "../common/Dialog/Dialog";
 import TextField from "../common/TextField/TextField";
 import Button from "../common/Button";
-import { useTimer } from "../../features/study/timer/hooks/useTimer";
 import useTasks from "../../features/study/study-log/hooks/useTasks";
 import TaskEditor from "../../features/study/study-log/components/task/task-editor";
 import TaskList from "../../features/study/study-log/components/task/task-list";
+import { useCreateTimer } from "@/features/study/timer/hooks/useCreateTimer";
 
 interface ModalProps {
   open: boolean;
@@ -13,15 +13,15 @@ interface ModalProps {
 }
 
 export default function StartTimderModal({ open, onClose }: ModalProps) {
-  const { startTimer } = useTimer();
+  const { mutate: startTimer } = useCreateTimer();
   const { tasks, addTask, updateTask, removeTask } = useTasks();
 
   const [goal, setGoal] = useState("");
 
   const isDisabled = tasks.length === 0 || !goal.trim();
 
-  async function handleStartTimer() {
-    await startTimer(goal, tasks);
+  function handleStartTimer() {
+    startTimer({ todayGoal: goal, tasks });
     onClose();
   }
 

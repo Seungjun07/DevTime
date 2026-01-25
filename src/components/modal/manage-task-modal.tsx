@@ -9,7 +9,7 @@ import TaskHeader from "../../features/study/study-log/components/task/task-head
 import TaskList from "../../features/study/study-log/components/task/task-list";
 import { useStudyLogTasksQuery } from "../../features/study/study-log/hooks/queries/useStudyLogTasksQuery";
 import type { Task } from "../../features/study/study-log";
-import { useTimerStore } from "../../store/timer";
+import { useTimerStore } from "@/store/timer";
 
 interface ModalProps {
   open: boolean;

@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import type { LoginData } from "../types";
 import {
   deleteToken,
   getAccessToken,
@@ -8,16 +7,15 @@ import {
   setRefreshToken,
 } from "../lib/token";
 import { combine } from "zustand/middleware";
-import { logout } from "../api/auth";
+import type { LoginResponse } from "@/features/auth/types/auth";
+import { logout } from "@/features/auth/api/auth";
 
 interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
-  isAuthenticated: boolean;
 
   login: () => void;
   logout: () => void;
-  refreshAccessToken: () => void;
 
   isLogin: boolean;
 }
@@ -34,7 +32,7 @@ const initialState = {
 export const useAuthStore = create(
   combine(initialState, (set) => ({
     actions: {
-      setTokens: (tokens: LoginData) => {
+      setTokens: (tokens: LoginResponse) => {
         setAccessToken(tokens.accessToken);
         setRefreshToken(tokens.refreshToken);
 
@@ -48,7 +46,7 @@ export const useAuthStore = create(
         try {
           await logout();
         } catch (error) {
-          console.log("로그아웃 실패!");
+          console.log("로그아웃 실패!", error);
         }
         deleteToken();
 

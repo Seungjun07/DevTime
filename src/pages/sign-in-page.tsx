@@ -2,13 +2,13 @@ import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "./../assets/logo-vertical.svg";
 import symbolLogo from "./../assets/Symbol-Logo.png";
-import { type LoginData } from "../types";
 import Button from "../components/common/Button";
-import TextField from "../components/common/TextField/TextField";
 import { useAuthStore } from "../store/auth";
 import { useModalStore } from "../store/modals";
 import { useSignInForm } from "../features/auth/hooks/useSignInForm";
-import { useSignIn } from "../hooks/mutations/auth/use-sign-in";
+import { useSignIn } from "../features/auth/hooks/useSignIn";
+import TextField from "../components/common/TextField/TextField";
+import type { LoginResponse } from "@/features/auth/types/auth";
 
 export default function SignInPage() {
   const navigate = useNavigate();
@@ -48,7 +48,7 @@ export default function SignInPage() {
     },
   });
 
-  function successLogin(data: LoginData) {
+  function successLogin(data: LoginResponse) {
     setTokens(data);
 
     if (data.isFirstLogin) {

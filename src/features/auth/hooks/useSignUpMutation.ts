@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { signUp } from "../../api/signup";
+import { signUp } from "../api/signup";
 import { useNavigate } from "react-router-dom";
 
 export function useSignupMutation() {
